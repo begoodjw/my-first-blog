@@ -1,0 +1,55 @@
+{% extends 'chat/base.html' %}
+
+{% block content %}
+    <textarea id="chat-log" cols="100" rows="20"></textarea><br/>
+
+    <input id="chat-message-input" type="text" size="100"/><br/>
+    <input id="chat-message-submit" type="button" value="Send"/>
+
+    <script>
+        var roomName = {{ room_name_json }};
+
+        var chatSocket = new WebSocket(
+            'ws://' + window.location.host +
+            '/ws/chat/' + roomName + '/');
+
+        chatSocket.onmessage = function(e) {
+            var data = JSON.parse(e.data);
+            var service_type = data['service_type']
+            var question = data['question']
+            var examples = data['examples']
+
+            document.querySelector('#chat-log').value += ('type: ' + service_type + '\n');
+            document.querySelector('#chat-log').value += ('Q: ' + question + '\n');
+            document.querySelector('#chat-log').value += (examples + '\n');
+
+            /*var message = data['message'];
+            if (message == '1') {
+                location.reload();
+            } else {
+                document.querySelector('#chat-log').value += (message + '\n');
+            }*/
+        };
+
+        chatSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+
+        document.querySelector('#chat-message-input').focus();
+        document.querySelector('#chat-message-input').onkeyup = function(e) {
+            if (e.keyCode === 13) {  // enter, return
+                document.querySelector('#chat-message-submit').click();
+            }
+        };
+
+        document.querySelector('#chat-message-submit').onclick = function(e) {
+            /*var messageInputDom = document.querySelector('#chat-message-input');
+            var message = messageInputDom.value;
+            chatSocket.send(JSON.stringify({
+                'message': message
+            }));
+
+            messageInputDom.value = '';*/
+        };
+    </script>
+{% endblock %}

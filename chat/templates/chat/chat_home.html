@@ -1,0 +1,230 @@
+{% extends 'chat/main.html' %}
+
+{% block content %}
+{% load static %}
+<!-- Dashboard Counts Section-->
+<section class="dashboard-counts no-padding-bottom">
+<div class="container-fluid">
+  <div class="row bg-white has-shadow">
+    <!-- Item -->
+    <div class="col-xl-3 col-sm-6">
+      <div class="item d-flex align-items-center">
+        <div class="icon bg-violet"></i></div>
+        <div class="title"><span>전체<br>카운트</span>
+        </div>
+        <div class="number"><strong>{{ services_all.count }}</strong></div>
+      </div>
+    </div>
+    <!-- Item -->
+    <div class="col-xl-3 col-sm-6">
+      <div class="item d-flex align-items-center">
+        <div class="icon bg-red"></i></div>
+        <div class="title"><span>반복<br>카운트</span>
+        </div>
+        <div class="number"><strong>{{ pending_repeat.count }}</strong></div>
+      </div>
+    </div>
+    <!-- Item -->
+    <div class="col-xl-3 col-sm-6">
+      <div class="item d-flex align-items-center">
+        <div class="icon bg-green"></i></div>
+        <div class="title"><span>예약<br>카운트</span>
+        </div>
+        <div class="number"><strong>{{ pending_reserve.count }}</strong></div>
+      </div>
+    </div>
+    <!-- Item -->
+    <div class="col-xl-3 col-sm-6">
+      <div class="item d-flex align-items-center">
+        <div class="icon bg-orange"></i></div>
+        <div class="title"><span>정답 대기<br>카운트</span>
+        </div>
+        <div class="number"><strong>{{ pending_quiz.count }}</strong></div>
+      </div>
+    </div>
+  </div>
+</div>
+</section><!-- Dashboard Counts Section-->
+
+<section class="tables">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="card">
+            <div class="card-header d-flex align-items-center">
+              <h3 class="h4">반복 리스트</h3>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
+                    <tr>
+                        <th hidden="hidden">서비스 ID</th>
+                        <th>서비스 타입</th>
+                        <th>퀴즈 타입</th>
+                        <th>프로그램</th>
+                        <th>요약</th>
+                        <th>수행 시간</th>
+                        <th>상태</th>
+                        <th>컨트롤</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for service in pending_repeat %}
+                    <tr class="table_row">
+                        <td class="service_id" hidden="hidden">{{ service.service_id }}</td>
+                        <td>{{ service.get_service_type }}</td>
+                        <td>{{ service.get_detail_type }}</td>
+                        <td>{{ service.program_title }}</td>
+                        <td>{{ service.service_title }}</td>
+                        <td >{{ service.display_process_info }}</td>
+                        <td class="schedule_info" style="width:10%">{{ service.display_schedule_info }}</td>
+                        <td >
+                            <div>
+                                <button class="ActivateButton" id="RepeatActivateButton">시작</button>
+                                <button class="DeactivateButton" id="RepeatDeactivateButton">정지</button>
+                                <button class="RemoveButton" id="RepeatRemoveButton">삭제</button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-12">
+          <div class="card">
+            <div class="card-header d-flex align-items-center">
+              <h3 class="h4">예약 리스트</h3>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
+                    <tr>
+                        <th hidden="hidden">서비스 ID</th>
+                        <th>서비스 타입</th>
+                        <th>퀴즈 타입</th>
+                        <th>프로그램</th>
+                        <th>요약</th>
+                        <th>수행 시간</th>
+                        <th>상태</th>
+                        <th>컨트롤</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for service in pending_reserve %}
+                    <tr class="table_row">
+                        <td class="service_id" hidden="hidden">{{ service.service_id }}</td>
+                        <td>{{ service.get_service_type }}</td>
+                        <td>{{ service.get_detail_type }}</td>
+                        <td>{{ service.program_title }}</td>
+                        <td>{{ service.service_title }}</td>
+                        <td >{{ service.display_process_info }}</td>
+                        <td >{{ service.display_schedule_info }}</td>
+                        <td >
+                            <div>
+                                <button class="ActivateButton" id="RserveActivateButton">시작</button>
+                                <button class="DeactivateButton" id="ReserveDeactivateButton">정지</button>
+                                <button class="RemoveButton" id="ReserveRemoveButton">삭제</button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-header d-flex align-items-center">
+              <h3 class="h4">정답 대기 리스트</h3>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
+                    <tr>
+                        <th hidden="hidden">서비스 ID</th>
+                        <th>퀴즈 타입</th>
+                        <th>프로그램</th>
+                        <th>요약</th>
+                        <th>질문</th>
+                        <th>보기</th>
+                        <th>날짜</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for service in pending_quiz %}
+                    <tr class="table_row">
+                        <td class="service_id" hidden="hidden">{{ service.service_id }}</td>
+                        <td>{{ service.get_detail_type }}</td>
+                        <td>{{ service.program_title }}</td>
+                        <td>{{ service.service_title }}</td>
+                        <td>{{ service.get_question }}</td>
+                        <td style="width:20%">{{ service.get_examples }}</td>
+                        <td>{{ service.publish_date }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-header d-flex align-items-center">
+              <h3 class="h4">히스토리</h3>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
+                    <tr>
+                        <th hidden="hidden">서비스 ID</th>
+                        <th>서비스 타입</th>
+                        <th>퀴즈 타입</th>
+                        <th>프로그램</th>
+                        <th>요약</th>
+                        <th>처리 방식</th>
+                        <th>처리 상태</th>
+                        <th>등록 일자</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for service in services_all %}
+                    <tr class="table_row">
+                        <td class="service_id" hidden="hidden">{{ service.service_id }}</td>
+                        <td>{{ service.get_service_type }}</td>
+                        <td>{{ service.get_detail_type }}</td>
+                        <td>{{ service.program_title }}</td>
+                        <td>{{ service.service_title }}</td>
+                        <td >{{ service.display_process_type }}</td>
+                        <td>{{ service.display_process_state }}</td>
+                        <td >{{ service.publish_date }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+</section>
+<script>
+    var roomName = {{ room_name_json }};
+</script>
+<script type="text/javascript" src="{% static 'js/chat-home.js' %}"></script>
+
+
+{% endblock %}

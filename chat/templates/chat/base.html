@@ -1,0 +1,27 @@
+{% load static %}
+<html>
+    <head>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+        <link rel="stylesheet" href="{% static 'css/chat.css' %}">
+        <title>에브리데이톡 실시간 양방향 서비스</title>
+    </head>
+    <body>
+        <div class="page-header">
+            <h1>에브리데이톡 실시간 양방향 서비스</h1>
+        </div>
+        <div class="content container">
+            <div class="row">
+                <div class="column first-col">
+                    {% block menu %}
+                    {% endblock %}
+                </div>
+                <div class="column second-col">
+                    {% block content %}
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

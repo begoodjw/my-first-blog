@@ -1,0 +1,264 @@
+{% extends 'chat/main.html' %}
+
+{% block content %}
+    <!--<h1><a href="{% url 'chat_history' room_name=room_name %}"> {{ room_name}} 서비스 히스토리</a></h1>
+    -->
+{% load static %}
+<section class="dashboard-header no-padding-bottom">
+<div class="container-fluid">
+  <div class="row">
+    <div class="statistics col-lg-7 col-12">
+      <div class="statistic d-flex align-items-center bg-white has-shadow">
+    <!-- Item -->
+        <div class="container">
+            <!--
+            <div class="stepwizard">
+                <div class="stepwizard-row setup-panel">
+                    <div class="stepwizard-step col-xs-3">
+                        <a href="#step-1" type="button" class="btn btn-success btn-circle">1</a>
+                        <p><small>STEP-1</small></p>
+                    </div>
+                    <div class="stepwizard-step col-xs-3">
+                        <a href="#step-2" type="button" class="btn btn-default btn-circle" disabled="disabled">2</a>
+                        <p><small>STEP-2</small></p>
+                    </div>
+                    <div class="stepwizard-step col-xs-3">
+                        <a href="#step-3" type="button" class="btn btn-default btn-circle" disabled="disabled">3</a>
+                        <p><small>STEP-3</small></p>
+                    </div>
+                    <div class="stepwizard-step col-xs-3">
+                        <a href="#step-4" type="button" class="btn btn-default btn-circle" disabled="disabled">4</a>
+                        <p><small>STEP-4</small></p>
+                    </div>
+                </div>
+            </div>-->
+
+            <form role="form">
+                <div class="panel panel-primary setup-content step-1" id="step-1">
+                    <div class="panel-heading">
+                         <h3 class="panel-title">STEP-1 :</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-group">
+                            <label class="control-label">프로그램 제목</label>
+                            <input id="program_title" maxlength="100" type="text" required="required" class="form-control" placeholder="프로그램 제목 입력" /><br>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label">서비스 타입 : </label>
+                            <select class="sevice_type" id="service_type" onchange="serviceTypeChange()">
+                                <option value="quiz">실시간 퀴즈</option>
+                                <option value="info">실시간 정보</option>
+                                <option value="vote">실시간 투표</option>
+                            </select>
+                            <label class="control-label">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;세부 타입 : </label>
+                            <select class="detail_type" id="detail_type">
+                                <option value="multi" class="quiz_option">객관식 퀴즈</option>
+                                <option value="single" class="quiz_option">주관식 퀴즈</option>
+                                <option value="product" class="info_option">관련 정보</option>
+                                <option value="multi" class="vote_option">객관식 투표</option>
+                                <option value="single" class="vote_option">주관식 투표</option>
+                            </select>
+                        </div>
+
+
+                        <button class="btn btn-primary nextBtn pull-right" type="button">Next</button>
+                    </div>
+                </div>
+
+                <div class="panel panel-primary setup-content step-2" id="step-2">
+                    <div class="panel-heading">
+                         <h3 class="panel-title">STEP-2: 서비스 정보 입력</h3>
+                    </div>
+
+                    <div class="panel-body" >
+                        <!--<div>
+                            <p id="step-2-header">헤더</p>
+                        </div>-->
+                        <div class="form-group">
+                            <label class="control-label">서비스 제목</label>
+                            <input id="title-input" maxlength="100" type="text" required="required" class="form-control" placeholder="서비스 제목 입력" />
+                        </div>
+                        <div class="service_quiz">
+                            <div class="form-group">
+                                <label class="control-label">질문</label>
+                                <input id="question-input" maxlength="200" type="text" required="required" class="form-control" placeholder="질문 입력" />
+                            </div>
+                            <div class="quiz-examples" id="quiz-multiple-choice">
+                                <div class="form-group">
+                                    <label class="control-label">보기</label>
+                                    <input id="multiple-example-input1" maxlength="20" type="text" name="multiple-example" required="required" class="form-control example-input" placeholder="보기 입력 1" />
+                                    <input id="multiple-example-input2" maxlength="20" type="text" name="multiple-example" required="required" class="form-control example-input" placeholder="보기 입력 2" />
+                                    <input id="multiple-example-input3" maxlength="20" type="text" name="multiple-example" class="form-control example-input" placeholder="보기 입력 3" />
+                                    <input id="multiple-example-input4" maxlength="20" type="text" name="multiple-example" class="form-control example-input" placeholder="보기 입력 4" />
+                                    <input id="multiple-example-input5" maxlength="20" type="text" name="multiple-example" class="form-control example-input" placeholder="보기 입력 5" />
+                                    <input id="multiple-example-input6" maxlength="20" type="text" name="multiple-example" class="form-control example-input" placeholder="보기 입력 6" />
+                                    <input id="multiple-example-input7" maxlength="20" type="text" name="multiple-example" class="form-control example-input" placeholder="보기 입력 7" />
+                                    <input id="multiple-example-input8" maxlength="20" type="text" name="multiple-example" class="form-control example-input" placeholder="보기 입력 8" />
+                                    <input id="multiple-example-input9" maxlength="20" type="text" name="multiple-example" class="form-control example-input" placeholder="보기 입력 9" />
+                                    <input id="multiple-example-input10" maxlength="20" type="text" name="multiple-example" class="form-control example-input" placeholder="보기 입력 10" />
+                                </div>
+                                <button id="add-quiz-example-button" class="btn btn-primary add-example-btn" type="button">+ 보기 추가</button>
+
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label">정답</label>
+                                <input id="answer-input" maxlength="20" type="text" required="required" class="form-control" style="margin-bottom: 10" placeholder="정답 입력" />
+                                <div class="radio">
+                                  <label><input type="radio" name="answer_radio" value="include" style="margin-right: 10" onclick="answerRadioClick(this);" checked >정답 포함 ( 자동 처리 )</label>
+                                </div>
+                                <div class="radio">
+                                  <label><input type="radio" name="answer_radio" value="exclude" style="margin-right: 10" onclick="answerRadioClick(this);">정답 불포함 ( 수동 처리 )</label>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label">카운트다운</label>
+                                <input id="countdown-input" maxlength="20" type="text" class="form-control" placeholder="시간 (초)입력" />
+                                <br style="line-height: 7px" />
+                                <p style="color:gray;">&nbsp;퀴즈 카운트다운 시간 제한 설정 (10초 ~ 60초), 미입력시 시간 제한 없음</p>
+                            </div>
+                        </div>
+                        <div class="service_info">
+                            <div>
+                                <label class="control-label">관련 설명</label>
+                                <textarea id="service_describe" style="width: 100%" rows="6" required="required">
+                                </textarea>
+                            </div>
+                            <div>
+                                <label class="control-label" style="margin-top: 20">관련 이미지</label><br>
+                                <input type='file' style="margin-top: 5" onchange="readURL(this);" />
+                                <img id="blah" src="#" style="margin-top: 5" alt="" />
+                            </div>
+                            <div>
+                                <label class="control-label" style="margin-top: 20">더 알아보기 링크</label>
+                                <div class="radio">
+                                    <label><input type="radio" name="info-link-radio" value="include" style="margin-right: 10" onclick="infoLinkRadioClick(this);" checked>사용</label>
+                                </div>
+                                <input id="info-link" type="url" class="form-control" required="required" style="margin-bottom: 10" placeholder="URL 입력" />
+                                <div class="radio">
+                                    <label><input type="radio" name="info-link-radio" value="exclude" style="margin-right: 10" onclick="infoLinkRadioClick(this);">사용 안함</label>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="service_vote">
+                            <div class="form-group">
+                                <label class="control-label">질문</label>
+                                <input id="vote-question-input" maxlength="200" type="text" required="required" class="form-control" placeholder="질문 입력" />
+                            </div>
+                            <div class="vote-examples" id="vote-multiple-choice">
+                                <div class="form-group">
+                                    <label class="control-label">보기</label>
+                                    <input id="vote-example-input1" maxlength="20" type="text" name="vote-example" required="required" class="form-control example-input" placeholder="보기 입력 1" />
+                                    <input id="vote-example-input2" maxlength="20" type="text" name="vote-example" required="required" class="form-control example-input" placeholder="보기 입력 2" />
+                                    <input id="vote-example-input3" maxlength="20" type="text" name="vote-example" class="form-control example-input" placeholder="보기 입력 3" />
+                                    <input id="vote-example-input4" maxlength="20" type="text" name="vote-example" class="form-control example-input" placeholder="보기 입력 4" />
+                                    <input id="vote-example-input5" maxlength="20" type="text" name="vote-example" class="form-control example-input" placeholder="보기 입력 5" />
+                                    <input id="vote-example-input6" maxlength="20" type="text" name="vote-example" class="form-control example-input" placeholder="보기 입력 6" />
+                                    <input id="vote-example-input7" maxlength="20" type="text" name="vote-example" class="form-control example-input" placeholder="보기 입력 7" />
+                                    <input id="vote-example-input8" maxlength="20" type="text" name="vote-example" class="form-control example-input" placeholder="보기 입력 8" />
+                                    <input id="vote-example-input9" maxlength="20" type="text" name="vote-example" class="form-control example-input" placeholder="보기 입력 9" />
+                                    <input id="vote-example-input10" maxlength="20" type="text" name="vote-example" class="form-control example-input" placeholder="보기 입력 10" />
+                                    <button id="add-vote-example-button" class="btn btn-primary add-example-btn" type="button">+ 보기 추가</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary nextBtn pull-right" type="button">Next</button>
+                    </div>
+                </div>
+
+                <div class="panel panel-primary setup-content step-3" id="step-3">
+                    <div class="panel-heading">
+                         <h3 class="panel-title">STEP-3: 서비스 수행 시간 설정</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-group">
+                            <label class="control-label">수행 시간</label>
+                            <div class="radio">
+                              <label><input type="radio" name="process_radio" value="now" style="margin-right: 10" onclick="processTimeRadioClick(this);" checked>지금</label>
+                            </div>
+                            <div class="radio">
+                              <label><input type="radio" name="process_radio" value="reserve" style="margin-right: 10" onclick="processTimeRadioClick(this);">예약</label>
+                            </div>
+                            <div class="reservation_config">
+                                <label for="process_date">날짜 : </label>
+                                <input type="date" id="process_date" name="appt1">
+                                <label for="process_time">시간 : </label>
+                                <input type="time" id="process_time" name="appt2">
+                            </div>
+                            <div class="radio">
+                              <label><input type="radio" name="process_radio" value="repeat" style="margin-right: 10" onclick="processTimeRadioClick(this);">반복</label>
+                            </div>
+                            <div class="repetition_config">
+
+                                <input type="checkbox" class="weekdayCheckbox" id="mon" value="월">
+                                <label class="weekday-label" for="mon">월요일</label>
+                                <input type="checkbox" class="weekdayCheckbox" id="tue" value="화">
+                                <label class="weekday-label" for="tue">화요일</label>
+                                <input type="checkbox" class="weekdayCheckbox" id="wen" value="수">
+                                <label class="weekday-label" for="wen">수요일</label>
+                                <input type="checkbox" class="weekdayCheckbox" id="thr" value="목">
+                                <label class="weekday-label" for="thr">목요일</label>
+                                <input type="checkbox" class="weekdayCheckbox" id="fri" value="금">
+                                <label class="weekday-label" for="fri">금요일</label>
+                                <input type="checkbox" class="weekdayCheckbox" id="sat" value="토">
+                                <label class="weekday-label" for="sat">토요일</label>
+                                <input type="checkbox" class="weekdayCheckbox" id="sun" value="일">
+                                <label class="weekday-label" for="sun">일요일</label><br>
+                                <label for="process_time2">시간 : </label>
+
+                                <input type="time" id="process_time2" name="appt3">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary nextBtn pull-right" type="button">Next</button>
+                    </div>
+                </div>
+                <div class="panel panel-primary setup-content step-4" id="step-4">
+                    <div class="panel-heading">
+                         <h3 class="panel-title">STEP-4: 서비스 최종 확인 및 실행</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-group">
+                            <div>
+                                <label class="control-label">프로그램 제목 : </label>
+                                <b id="final_program_title"></b><br>
+                                <label class="control-label">서비스 타입 : </label>
+                                <b id="final_service_type"></b><br>
+                                <label class="control-label">세부 타입 : </label>
+                                <b id="final_detail_type"></b><br>
+                                <label class="control-label">서비스 제목 : </label>
+                                <b id="final_service_title"></b><br>
+                                <label class="control-label">서비스 정보 : </label>
+                                <p id="final_service_text1"></p>
+                                <p id="final_service_text2"></p>
+                                <p id="final_service_text3"></p>
+                                <p id="final_service_text4"></p>
+                                <label class="control-label">카운트다운(초) : </label>
+                                <b id="final_service_countdown"></b><br>
+                                <label class="control-label">서비스 처리 타입 : </label>
+                                <b id="final_process_type"></b><br>
+                                <label class="control-label">서비스 처리 정보 : </label>
+                                <b id="final_process_info"></b><br>
+
+                            </div>
+                        </div>
+                        <button class="btn btn-success pull-right" type="button" id="service_submit">Finish!</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+  </div>
+</div>
+</div>
+</section>
+<script>
+    var roomName = {{ room_name_json }};
+</script>
+<script type="text/javascript" src="{% static 'js/chat-admin.js' %}"></script>
+
+
+{% endblock %}

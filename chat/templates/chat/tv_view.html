@@ -1,0 +1,163 @@
+<!-- chat/templates/chat/room.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Chat Room</title>
+</head>
+<body>
+    <p id="browser_type">type</p>
+    <div id="type-service1" class="type1">
+        <p id="type1-question">Question</p>
+        <button type="button" id="type1-example1" style="display:none;" onClick="showAndroidToast('1')">example1</button>
+        <button type="button" id="type1-example2" style="display:none;" onClick="showAndroidToast('2')">example2</button>
+        <button type="button" id="type1-example3" style="display:none;" onClick="showAndroidToast('3')">example3</button>
+        <button type="button" id="type1-example4" style="display:none;" onClick="showAndroidToast('4')">example4</button>
+    </div>
+    <div id="type-service2" class="type2">
+        <p id="type2-question">Question</p>
+        <button type="button" id="type2-example1" style="display:none;" onClick="showAndroidToast('1')">O</button>
+        <button type="button" id="type2-example2" style="display:none;" onClick="showAndroidToast('2')">X</button>
+    </div>
+    <div id="type-countdown" class="countdown">
+        <p id="countdown"></p>
+    </div>
+    <div id="type-answer-check" class="answer-check">
+        <p id="answer-check"></p>
+    </div>
+</body>
+<script>
+    var my_answer = ''
+    function showAndroidToast(toast) {
+        //Android.showToast(toast);
+        my_answer = toast
+    }
+
+    function getMobileOperatingSystem() {
+        var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+
+        // Windows Phone must come first because its UA also contains "Android"
+        if (/windows phone/i.test(userAgent)) {
+
+            return "Windows Phone";
+        }
+
+        if (/android/i.test(userAgent)) {
+            return "Android";
+        }
+
+        // iOS detection from: http://stackoverflow.com/a/9039885/177710
+        if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+            return "iOS";
+        }
+
+        return "unknown";
+    }
+
+    document.getElementById("browser_type").innerHTML = getMobileOperatingSystem();
+    document.getElementById("type-service1").style.display = "none";
+    document.getElementById("type-service2").style.display = "none";
+    document.getElementById("type-countdown").style.display = "none";
+    document.getElementById("type-answer-check").style.display = "none";
+
+    var roomName = {{ room_name_json }};
+    var current_type = "0";
+    var current_countdown = -1;
+
+    var chatSocket = new WebSocket(
+        'ws://' + window.location.host +
+        '/ws/chat/' + roomName + '/');
+
+    chatSocket.onmessage = function(e) {
+        var data = JSON.parse(e.data);
+        var service_type = data['service_type'];
+        var countdown = parseInt(data['countdown']);
+
+        document.getElementById("type-answer-check").style.display = "none";
+        if (service_type == 'quiz') {
+            var question = data['question'];
+            var examples = data['examples'];
+
+            if (current_type != "0") {
+                document.getElementById("type-service" + current_type).style.display = "none";
+            }
+            current_type = service_type;
+            document.getElementById("type1-question").innerHTML = question;
+            var res = examples.split("|");
+            var i;
+            for (i = 1; i <= res.length; i++) {
+                example = "type1-example" + i.toString();
+                document.getElementById(example).innerHTML = res[i-1];
+                document.getElementById(example).style.display = "block";
+            }
+            document.getElementById("type-service1").style.display = "initial";
+            setCountDownInterval(countdown, data)
+        }
+        else if (service_type == '2'){
+            var question = data['question'];
+            if (current_type != "0") {
+                document.getElementById("type-service" + current_type).style.display = "none";
+            }
+            current_type = service_type;
+            document.getElementById("type2-question").innerHTML = question;
+            document.getElementById('type2-example1').style.display = "block";
+            document.getElementById('type2-example2').style.display = "block";
+            document.getElementById("type-service2").style.display = "initial";
+            setCountDownInterval(countdown, data)
+        }
+
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    function setCountDownInterval(countdown, data){
+        if ( countdown > 0 ){
+            var count = countdown;
+            document.getElementById("type-countdown").innerHTML = count;
+            document.getElementById("type-countdown").style.display = "initial";
+
+            var id = setInterval(setCountDown, 1000);
+            function setCountDown(){
+                if (count == 0) {
+                    document.getElementById("type-countdown").style.display = "none";
+                    clearInterval(id)
+                    postCountDown(data)
+                } else {
+                    count--;
+                    document.getElementById("type-countdown").innerHTML = count;
+                }
+            }
+        }
+    }
+
+    function postCountDown(data) {
+        var service_type = data['service_type'];
+        if (service_type == '1') {
+            //check answer
+            if (my_answer == data['answer']){
+                document.getElementById("type-answer-check").innerHTML = "정답입니다.";
+            }
+            else {
+                document.getElementById("type-answer-check").innerHTML = "오답입니다.";
+            }
+            document.getElementById("type-answer-check").style.display = "initial";
+            Android.saveServiceInfo(roomName, data["service_id"], my_answer);
+        } else if ( service_type == '2') {
+            //check answer
+            if (my_answer == data['answer']){
+                document.getElementById("type-answer-check").innerHTML = "정답입니다.";
+            }
+            else {
+                document.getElementById("type-answer-check").innerHTML = "오답입니다.";
+            }
+            document.getElementById("type-answer-check").style.display = "initial";
+            Android.saveServiceInfo(roomName, data["service_id"], my_answer);
+        }
+    }
+
+
+
+</script>
+</html>

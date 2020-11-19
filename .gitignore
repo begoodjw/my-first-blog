@@ -7,3 +7,9 @@ db.sqlite3
 .DS_Store
 
 
+/content/static/admin/
+/content/static/css/
+/content/static/fonts/
+/content/static/js/
+/content/static/vendor/
+/mysite/secret_config.py
