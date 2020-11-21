@@ -13,3 +13,5 @@ db.sqlite3
 /content/static/js/
 /content/static/vendor/
 /mysite/secret_config.py
+/chat/migrations/
+/accounts/migrations/
