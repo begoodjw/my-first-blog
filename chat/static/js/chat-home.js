@@ -1,4 +1,7 @@
+var roomName = document.getElementById("interactive-service-channel").textContent;
+
 $(document).ready(function () {
+
     const ACTIVE_STATE = 1;
     const INACTIVE_STATE = 0;
     const FINISH_STATE = 9;
@@ -6,7 +9,7 @@ $(document).ready(function () {
     document.getElementById("action-title").innerHTML = "Dashboard"
 
     var chatSocket = new WebSocket(
-        'ws://' + window.location.host +
+        'wss://' + window.location.host +
         '/ws/chat/' + roomName +'Manager' + '/');
 
     chatSocket.onclose = function(e) {
@@ -34,11 +37,14 @@ $(document).ready(function () {
                 $deactivate_button.prop('disabled', false);
                 $remove_button.prop('disabled', false);
             }, 3000);
-
+            category = 'tv'
+            if (roomName == "ADMIN"){
+                category = "menual"
+            }
             chatSocket.send(JSON.stringify({
-                'category': 'tv',
+                'category': category,
                 'service_type': "update_schedule",
-                'channel_name': roomName,
+                'owner': roomName,
                 'service_id': $service_id.text(),
                 'state': ACTIVE_STATE, //active
             }));
@@ -65,11 +71,14 @@ $(document).ready(function () {
                 $activate_button.prop('disabled', false);
                 $remove_button.prop('disabled', false);
             }, 3000);
-
+            category = 'tv'
+            if (roomName == "ADMIN"){
+                category = "menual"
+            }
             chatSocket.send(JSON.stringify({
-                'category': 'tv',
+                'category': category,
                 'service_type': "update_schedule",
-                'channel_name': roomName,
+                'owner': roomName,
                 'service_id': $service_id.text(),
                 'state': INACTIVE_STATE, //active
             }));
@@ -96,11 +105,14 @@ $(document).ready(function () {
                 $item.html("삭제");
                 location.reload();
             }, 4000);
-
+            category = 'tv'
+            if (roomName == "ADMIN"){
+                category = "menual"
+            }
             chatSocket.send(JSON.stringify({
-                'category': 'tv',
+                'category': category,
                 'service_type': "update_schedule",
-                'channel_name': roomName,
+                'owner': roomName,
                 'service_id': $service_id.text(),
                 'state': FINISH_STATE, //active
             }));

@@ -67,9 +67,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 }
             )
             return
-        process_type = text_data_json['process_type']
+
         service_id = get_service_id(category, text_data_json)
-        if process_type == ProcessType.NOW or send_type == self.QUIZ_ANSWER or send_type == self.SCHEDULE_DATA:
+        if send_type == self.QUIZ_ANSWER or send_type == self.SCHEDULE_DATA:
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
@@ -79,18 +79,30 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 }
             )
         else:
-            # FIXME: set schedule data for REPEAT and RESERVE
-            create_service_schedule(service_id, text_data_json)
+            process_type = text_data_json['process_type']
+            if process_type == ProcessType.NOW:
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        'type': send_type,
+                        'service_id': service_id,
+                        'data': text_data_json,
+                    }
+                )
+            else:
+                # FIXME: set schedule data for REPEAT and RESERVE
+                create_service_schedule(service_id, text_data_json)
 
         # sync to db
-        if category == Category.TV:
+        if category == Category.TV or category == Category.MENUAL:
             await self.update_db(text_data_json, service_id)
 
     async def update_db(self, text_data_json, service_id):
         service_type = text_data_json['service_type']
+        owner = text_data_json['owner']
         channel_name = text_data_json['channel_name']
         if service_type == ServiceType.QUIZ_ANSWER:
-            service_obj = get_tv_service(channel_name).objects.get(channel_name=channel_name, service_id=service_id)
+            service_obj = get_tv_service(owner).objects.get(service_id=service_id)
             service_obj.result = text_data_json['answer']
             if service_obj.process_type == ProcessType.REPEAT:
                 service_obj.process_state = ProcessState.WAIT_SEND
@@ -101,7 +113,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     remove_service_schedule(service_id)
 
         elif service_type == ServiceType.SCHEDULE:
-            service_obj = get_tv_service(channel_name).objects.get(channel_name=channel_name, service_id=service_id)
+            service_obj = get_tv_service(owner).objects.get(service_id=service_id)
             if service_obj.process_type == ProcessType.REPEAT:
                 if service_obj.service_type == ServiceType.QUIZ:
                     if service_obj.answer_include == 'exclude':
@@ -146,9 +158,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
             # sync to db
             #service_obj = TvService.objects.create()
-            service_obj = get_tv_service(channel_name).objects.create()
+            service_obj = get_tv_service(owner).objects.create()
             if service_obj is None:
-                print("No DB Object for " + channel_name)
+                print("No DB Object for " + owner)
                 return
             service_obj.service_id = service_id
             service_obj.program_title = program_title
@@ -172,10 +184,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     def update_schedule_db(self, text_data_json):
         service_id = text_data_json['service_id']
-        channel_name = text_data_json['channel_name']
+        #channel_name = text_data_json['channel_name']
+        owner = text_data_json['owner']
         state = text_data_json['state']
 
-        service_obj = get_tv_service(channel_name).objects.get(channel_name=channel_name, service_id=service_id)
+        #service_obj = get_tv_service(channel_name).objects.get(channel_name=channel_name, service_id=service_id)
+        service_obj = get_tv_service(owner).objects.get(service_id=service_id)
 
         if state == ScheduleState.ACTIVE:
             service_obj.schedule_state = state
@@ -331,6 +345,11 @@ def get_send_data(service_id, event):
 
 
 def get_service_id(category, json_data):
+    if 'service_id' in json_data:
+        service_id = json_data['service_id']
+    else:
+        service_id = json_data['channel_name'].replace(" ", "") + "-" + get_random_string(16)
+    '''    
     if category == Category.TV:
         service_type = json_data['service_type']
         if service_type == ServiceType.QUIZ_ANSWER or service_type == ServiceType.SCHEDULE:
@@ -339,7 +358,7 @@ def get_service_id(category, json_data):
             service_id = json_data['channel_name'].replace(" ", "") + "-" + get_random_string(16)
     else:
         service_id = json_data['service_id']
-
+    '''
     return service_id
 
 
@@ -369,8 +388,8 @@ def get_schedule_state(process_type):
 
 
 def get_schedule_data(service_id, event):
-    channel_name = event["channel_name"]
-    service_obj = get_tv_service(channel_name).objects.get(channel_name=channel_name, service_id=service_id)
+    owner = event["owner"]
+    service_obj = get_tv_service(owner).objects.get(service_id=service_id)
     service_type = service_obj.service_type
     detail_type = service_obj.detail_type
 

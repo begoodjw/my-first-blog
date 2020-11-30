@@ -143,6 +143,9 @@ class TvService(models.Model):
         return example_display
 
 
+class AllService(TvService):
+    pass
+
 class KBS1Service(TvService):
     pass
 

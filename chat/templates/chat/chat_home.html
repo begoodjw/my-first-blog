@@ -60,6 +60,7 @@
                   <thead>
                     <tr>
                         <th hidden="hidden">서비스 ID</th>
+                        <th class="channel_name" hidden="hidden">채널</th>
                         <th>서비스 타입</th>
                         <th>퀴즈 타입</th>
                         <th>프로그램</th>
@@ -73,6 +74,7 @@
                     {% for service in pending_repeat %}
                     <tr class="table_row">
                         <td class="service_id" hidden="hidden">{{ service.service_id }}</td>
+                        <td class="channel_name" hidden="hidden">{{ service.channel_name }}</td>
                         <td>{{ service.get_service_type }}</td>
                         <td>{{ service.get_detail_type }}</td>
                         <td>{{ service.program_title }}</td>
@@ -105,6 +107,7 @@
                   <thead>
                     <tr>
                         <th hidden="hidden">서비스 ID</th>
+                        <th class="channel_name" hidden="hidden">채널</th>
                         <th>서비스 타입</th>
                         <th>퀴즈 타입</th>
                         <th>프로그램</th>
@@ -118,6 +121,7 @@
                     {% for service in pending_reserve %}
                     <tr class="table_row">
                         <td class="service_id" hidden="hidden">{{ service.service_id }}</td>
+                        <td class="channel_name" hidden="hidden">{{ service.channel_name }}</td>
                         <td>{{ service.get_service_type }}</td>
                         <td>{{ service.get_detail_type }}</td>
                         <td>{{ service.program_title }}</td>
@@ -151,6 +155,7 @@
                   <thead>
                     <tr>
                         <th hidden="hidden">서비스 ID</th>
+                        <th class="channel_name" hidden="hidden">채널</th>
                         <th>퀴즈 타입</th>
                         <th>프로그램</th>
                         <th>요약</th>
@@ -163,6 +168,7 @@
                     {% for service in pending_quiz %}
                     <tr class="table_row">
                         <td class="service_id" hidden="hidden">{{ service.service_id }}</td>
+                        <td class="channel_name" hidden="hidden">{{ service.channel_name }}</td>
                         <td>{{ service.get_detail_type }}</td>
                         <td>{{ service.program_title }}</td>
                         <td>{{ service.service_title }}</td>
@@ -189,6 +195,7 @@
                   <thead>
                     <tr>
                         <th hidden="hidden">서비스 ID</th>
+                        <th class="channel_name" hidden="hidden">채널</th>
                         <th>서비스 타입</th>
                         <th>퀴즈 타입</th>
                         <th>프로그램</th>
@@ -202,6 +209,7 @@
                     {% for service in services_all %}
                     <tr class="table_row">
                         <td class="service_id" hidden="hidden">{{ service.service_id }}</td>
+                        <td class="channel_name" hidden="hidden">{{ service.channel_name }}</td>
                         <td>{{ service.get_service_type }}</td>
                         <td>{{ service.get_detail_type }}</td>
                         <td>{{ service.program_title }}</td>
@@ -221,9 +229,6 @@
       </div>
     </div>
 </section>
-<script>
-    var roomName = {{ room_name_json }};
-</script>
 <script type="text/javascript" src="{% static 'js/chat-home.js' %}"></script>
 
 

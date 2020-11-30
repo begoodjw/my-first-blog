@@ -10,20 +10,32 @@ var service_text4;
 var process_type;
 var process_info;
 var countdown;
+var owner;
+var channel_name;
+var category;
+var chatSocket;
 
 var current_step_num = 0;
 const example_max_add_count = 6;
 var example_add_count = 0;
 
-//var roomName = {{ room_name_json }};
+var roomName = document.getElementById("interactive-service-channel").textContent;
+console.log("room name: " + roomName);
 
-var chatSocket = new WebSocket(
+if (roomName == "ADMIN") {
+    $("#channel-form").show();
+}else{
+    $("#channel-form").hide();
+    document.getElementById("channel_name").required = false;
+}
+
+/*var chatSocket = new WebSocket(
     'ws://' + window.location.host +
     '/ws/chat/' + roomName + '/');
 
 chatSocket.onclose = function(e) {
     console.error('Chat socket closed unexpectedly');
-};
+};*/
 
 
 
@@ -214,6 +226,21 @@ $(document).ready(function () {
                 program_title = document.querySelector('#program_title').value;
                 service_type = document.querySelector('#service_type').value;
                 detail_type = document.querySelector('#detail_type').value;
+                owner = roomName;
+                if(roomName == "ADMIN"){
+                    channel_name = document.querySelector('#channel_name').value;
+                    category = "menual";
+                }else{
+                    channel_name = roomName;
+                    category = "tv"
+                }
+                chatSocket = new WebSocket(
+                    'wss://' + window.location.host +
+                    '/ws/chat/' + channel_name + '/');
+
+                    chatSocket.onclose = function(e) {
+                        console.error('Chat socket closed unexpectedly');
+                    };
 
                 //document.getElementById("step-2-header").innerHTML = program_title + service_type + detail_type;
 
@@ -414,9 +441,12 @@ $(document).ready(function () {
 
 document.querySelector('#service_submit').onclick = function(e) {
 
+
+
     chatSocket.send(JSON.stringify({
-        'category': 'tv',
-        'channel_name': roomName,
+        'category': category,
+        'owner': owner,
+        'channel_name': channel_name,
         'program_title': program_title,
         'service_type': service_type,
         'detail_type': detail_type,

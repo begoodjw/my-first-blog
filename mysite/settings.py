@@ -182,15 +182,18 @@ MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
 
 
 # Temporary
-STATIC_ROOT = os.path.join(CONTENT_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
 
-MEDIA_ROOT = os.path.join(CONTENT_DIR, 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
-STATICFILES_DIRS = [
-]
+#STATICFILES_DIRS = []
+
+STATICFILES_DIRS = (
+    #os.path.join(BASE_DIR, 'chat/static'),
+)
 
 LOCALE_PATHS = [
-    os.path.join(CONTENT_DIR, 'locale'),
+    os.path.join(BASE_DIR, 'locale'),
 ]

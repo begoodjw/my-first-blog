@@ -39,6 +39,10 @@
                          <h3 class="panel-title">STEP-1 :</h3>
                     </div>
                     <div class="panel-body">
+                        <div class="form-group" id="channel-form">
+                            <label class="control-label">채널</label>
+                            <input id="channel_name" maxlength="100" type="text" required="required" class="form-control" placeholder="채널 입력" /><br>
+                        </div>
                         <div class="form-group">
                             <label class="control-label">프로그램 제목</label>
                             <input id="program_title" maxlength="100" type="text" required="required" class="form-control" placeholder="프로그램 제목 입력" /><br>
@@ -223,25 +227,27 @@
                     <div class="panel-body">
                         <div class="form-group">
                             <div>
-                                <label class="control-label">프로그램 제목 : </label>
-                                <b id="final_program_title"></b><br>
-                                <label class="control-label">서비스 타입 : </label>
-                                <b id="final_service_type"></b><br>
-                                <label class="control-label">세부 타입 : </label>
-                                <b id="final_detail_type"></b><br>
-                                <label class="control-label">서비스 제목 : </label>
-                                <b id="final_service_title"></b><br>
-                                <label class="control-label">서비스 정보 : </label>
-                                <p id="final_service_text1"></p>
-                                <p id="final_service_text2"></p>
-                                <p id="final_service_text3"></p>
-                                <p id="final_service_text4"></p>
-                                <label class="control-label">카운트다운(초) : </label>
-                                <b id="final_service_countdown"></b><br>
-                                <label class="control-label">서비스 처리 타입 : </label>
-                                <b id="final_process_type"></b><br>
-                                <label class="control-label">서비스 처리 정보 : </label>
-                                <b id="final_process_info"></b><br>
+                                <label class="control-label">▶ 프로그램 제목 : </label>
+                                <b id="final_program_title" class="final-value"></b><br>
+                                <label class="control-label">▶ 서비스 타입 : </label>
+                                <b id="final_service_type" class="final-value"></b><br>
+                                <label class="control-label">▶ 세부 타입 : </label>
+                                <b id="final_detail_type" class="final-value"></b><br>
+                                <label class="control-label">▶ 서비스 제목 : </label>
+                                <b id="final_service_title" class="final-value"></b><br>
+                                <label class="control-label">▶ 서비스 정보 : </label>
+                                <div class="final-value-box">
+                                    <p id="final_service_text1"></p>
+                                    <p id="final_service_text2"></p>
+                                    <p id="final_service_text3"></p>
+                                    <p id="final_service_text4"></p>
+                                </div>
+                                <label class="control-label">▶ 카운트다운(초) : </label>
+                                <b id="final_service_countdown" class="final-value"></b><br>
+                                <label class="control-label">▶ 서비스 처리 타입 : </label>
+                                <b id="final_process_type" class="final-value"></b><br>
+                                <label class="control-label">▶ 서비스 처리 정보 : </label>
+                                <b id="final_process_info" class="final-value"></b><br>
 
                             </div>
                         </div>
@@ -255,9 +261,6 @@
 </div>
 </div>
 </section>
-<script>
-    var roomName = {{ room_name_json }};
-</script>
 <script type="text/javascript" src="{% static 'js/chat-admin.js' %}"></script>
 
 

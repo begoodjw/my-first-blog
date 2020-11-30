@@ -22,3 +22,4 @@ urlpatterns = [
     path('', include('accounts.urls')),
 
 ]
+print("@@@@ mysite url")

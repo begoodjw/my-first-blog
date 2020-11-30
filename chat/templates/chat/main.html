@@ -67,7 +67,7 @@
           <!-- Sidebar Header-->
           <div class="sidebar-header d-flex align-items-center">
             <div class="title">
-              <h1 class="h4">{{ room_name }}</h1>
+              <h1 id="interactive-service-channel" class="h4">{{ room_name }}</h1>
               <p>실시간 서비스 관리자</p>
             </div>
           </div>
@@ -97,6 +97,7 @@
           <!-- Page Header-->
           <header class="page-header">
             <div class="container-fluid">
+              <div hidden="hidden" id="current-side-menu">{{ action }}</div>
               <h2 id="action-title" class="no-margin-bottom">Dashboard</h2>
             </div>
           </header>
@@ -179,22 +180,7 @@
     <!-- JavaScript files-->
     <!-- JavaScript files-->
     <!-- JavaScript files-->
-    <script>
-      var action = "{{ action }}";
-      if (action == "home") {
-        var element = document.getElementById("side-menu-home");
-        element.classList.add("active");
-      }else if (action == "create") {
-        var element = document.getElementById("side-menu-create");
-        element.classList.add("active");
-      }else if (action == "history"){
-        var element = document.getElementById("side-menu-history");
-        element.classList.add("active");
-      }else if (action == "quiz_answer"){
-        var element = document.getElementById("side-menu-quiz-answer");
-        element.classList.add("active");
-      }
-    </script>
+    <script src="{% static 'js/main-init.js' %}"></script>
     <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
     <script src="{% static 'vendor/popper.js/umd/popper.min.js' %}"> </script>
     <script src="{% static 'vendor/bootstrap/js/bootstrap.min.js' %}"></script>

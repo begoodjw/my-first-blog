@@ -50,6 +50,8 @@ def get_tv_service(channel_name):
         return MBCService
     elif channel_name == 'SBS':
         return SBSService
+    elif channel_name == 'ADMIN':
+        return AllService
     else:
         return ChannelService1
 
@@ -67,6 +69,8 @@ def get_tv_permission(channel_name):
         return 'chat.add_mbcservice'
     elif channel_name == 'SBS':
         return 'chat.add_sbsservice'
+    elif channel_name == 'SBS':
+        return 'chat.add_allservice'
     else:
         return 'chat.add_channelservice1'
 

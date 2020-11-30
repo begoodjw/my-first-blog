@@ -54,15 +54,16 @@ class Scheduler(object):
 
     def load_all_schedules(self):
         print("start load all schedules")
-        for channel in tv_channels:
-            print("load channel: " + channel)
-            repeat_services = get_tv_service(channel).objects.filter(channel_name=channel, process_type=ProcessType.REPEAT).exclude(schedule_state=ScheduleState.FINISH)
-            reserve_services = get_tv_service(channel).objects.filter(channel_name=channel, process_type=ProcessType.RESERVE).exclude(schedule_state=ScheduleState.FINISH)
+        tv_channels.append("ADMIN")
+        for owner in tv_channels:
+            print("load channel: " + owner)
+            repeat_services = get_tv_service(owner).objects.filter(process_type=ProcessType.REPEAT).exclude(schedule_state=ScheduleState.FINISH)
+            reserve_services = get_tv_service(owner).objects.filter(process_type=ProcessType.RESERVE).exclude(schedule_state=ScheduleState.FINISH)
             for service_obj in repeat_services:
                 print("repeat_services, service_title: " + service_obj.service_title)
                 if service_obj.process_state != ProcessState.FINISH:
 
-                    self.set_schedule(json.loads(service_obj.process_info), service_obj.service_id, service_obj.channel_name)
+                    self.set_schedule(json.loads(service_obj.process_info), service_obj.service_id, owner, service_obj.channel_name)
                     if service_obj.schedule_state == ScheduleState.INACTIVE:
                         print("INACTIVE repeat_services, service_id: " + service_obj.service_id)
                         self.sched.pause_job(service_obj.service_id)
@@ -89,7 +90,7 @@ class Scheduler(object):
                         service_obj.schedule_state = ScheduleState.FINISH
                         service_obj.save()
                     else:
-                        self.set_schedule(json.loads(process_info), service_obj.service_id, service_obj.channel_name)
+                        self.set_schedule(json.loads(process_info), service_obj.service_id, owner, service_obj.channel_name)
                         if service_obj.schedule_state == ScheduleState.INACTIVE:
                             print("INACTIVE reserve_services, service_id: " + service_obj.service_id)
                             self.sched.pause_job(service_obj.service_id)
@@ -100,11 +101,12 @@ class Scheduler(object):
                     service_obj.schedule_state = ScheduleState.FINISH
                     service_obj.save()
 
-    def send_service(self, process_type, service_id, room_name):
+    def send_service(self, process_type, service_id, owner, room_name):
         print('@@ send service, id:' + service_id + ', channel: ' + room_name + ' type: ' + str(process_type))
         ws = websocket.create_connection("ws://localhost:8000/ws/chat/" + room_name + "/") #FIXME
         send_data = json.dumps({
             'category': Category.TV,
+            'owner': owner,
             'channel_name': room_name,
             'service_type': ServiceType.SCHEDULE,
             'service_id': service_id,
@@ -115,7 +117,7 @@ class Scheduler(object):
         for job in self.sched.get_jobs():
             print("@@ remain jobs: " + str(job.id))
 
-    def set_schedule(self, process_info, service_id, room_name):
+    def set_schedule(self, process_info, service_id, owner, room_name):
         process_type = process_info["type"]
         if process_type == ProcessType.RESERVE:
             current_date = datetime.now()
@@ -134,7 +136,7 @@ class Scheduler(object):
 
             self.sched.add_job(self.send_service, 'cron',
                                year=year, month=month, day=day, hour=hour, minute=minute,
-                               id=service_id, args=(process_type, service_id, room_name))
+                               id=service_id, args=(process_type, service_id, owner, room_name))
 
         elif process_type == ProcessType.REPEAT:
             process_weekdays = process_info["weekdays"]
@@ -144,10 +146,10 @@ class Scheduler(object):
             print('add repeat schedule, id:' + service_id + " " + weekdays + "  " + hour + minute)
             self.sched.add_job(self.send_service, 'cron', day_of_week=weekdays,
                                hour=hour, minute=minute,
-                               id=service_id, args=(process_type, service_id, room_name))
+                               id=service_id, args=(process_type, service_id, owner, room_name))
 
     def activate_schedule(self, service_id, room_name):
-        service_obj = get_tv_service(room_name).objects.get(channel_name=room_name, service_id=service_id)
+        service_obj = get_tv_service(room_name).objects.get(service_id=service_id)
         if service_obj.schedule_state == ScheduleState.INACTIVE:
             print('activate schedule, id:' + service_id)
             service_obj.schedule_state = ScheduleState.ACTIVE
@@ -155,7 +157,7 @@ class Scheduler(object):
             service_obj.save()
 
     def deactivate_schedule(self, service_id, room_name):
-        service_obj = get_tv_service(room_name).objects.get(channel_name=room_name, service_id=service_id)
+        service_obj = get_tv_service(room_name).objects.get(service_id=service_id)
         if service_obj.schedule_state == ScheduleState.ACTIVE:
             print('deactivate schedule, id:' + service_id)
             service_obj.schedule_state = ScheduleState.INACTIVE

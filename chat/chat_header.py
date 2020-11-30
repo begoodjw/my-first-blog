@@ -1,6 +1,7 @@
 class Category:
     TV = "tv"
     SPORTS = "sports"
+    MENUAL = "menual"
 
 
 class ServiceType:

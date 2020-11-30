@@ -1,0 +1,1 @@
+document.getElementById("action-title").innerHTML = "서비스 히스토리"

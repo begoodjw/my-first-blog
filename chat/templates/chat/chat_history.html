@@ -1,6 +1,7 @@
 {% extends 'chat/main.html' %}
 
 {% block content %}
+{% load static %}
 
 <section class="tables">
     <div class="container-fluid">
@@ -48,9 +49,5 @@
       </div>
     </div>
 </section>
-<script>
-
-    document.getElementById("action-title").innerHTML = "서비스 히스토리"
-
-</script>
+<script src="{% static 'js/chat-history.js' %}"></script>
 {% endblock %}
