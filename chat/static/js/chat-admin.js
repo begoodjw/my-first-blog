@@ -136,10 +136,10 @@ function readURL(input) {
         var reader = new FileReader();
 
         reader.onload = function (e) {
-            $('#blah')
+            $('#info-image')
                 .attr('src', e.target.result)
                 .width(300)
-                    .height(200);
+                    .height(300);
         };
 
         reader.readAsDataURL(input.files[0]);
@@ -339,7 +339,7 @@ $(document).ready(function () {
                     countdown = document.querySelector('#countdown-input').value;
                 }else if (service_type == 'info'){
                     service_text1 = document.querySelector('#service_describe').value;
-                    service_text2 = document.querySelector('#blah').src;
+                    service_text2 = document.querySelector('#info-image').src;
                     service_text3 = document.querySelector('#info-link').value;
 
                 }else if (service_type == 'vote'){
@@ -385,14 +385,36 @@ $(document).ready(function () {
                         final_text3 = '  - 정답 포함 여부 : 불포함';
                         final_text4 = '  - 정답 : -';
                     }
+                    document.getElementById("final_service_text1").innerHTML = final_text1;
+                    document.getElementById("final_service_text2").innerHTML = final_text2;
+                    document.getElementById("final_service_text3").innerHTML = final_text3;
+                    document.getElementById("final_service_text4").innerHTML = final_text4;
                 }else if(service_type == 'vote') {
                     final_text1 = '  - 질문 : ' + service_text1;
                     final_text2 = '  - 보기 : ' + service_text2;
                     //final_text3 = service_text3;
                     //final_text4 = service_text4;
+                    document.getElementById("final_service_text1").innerHTML = final_text1;
+                    document.getElementById("final_service_text2").innerHTML = final_text2;
                 }else{
                     final_text1 = '  - 설명 : ' + service_text1;
-                    final_text2 = '  - 링크 : ' + service_text3;
+                    document.getElementById("final_service_text1").innerHTML = final_text1;
+
+                    var div2 = document.getElementById("final_service_text2");
+                    var aTag = document.createElement('a');
+                    aTag.setAttribute('href',service_text3);
+                    aTag.setAttribute('target', '_blank');
+                    aTag.innerText = "<<< 링크 테스트 클릭 >>>";
+                    div2.appendChild(aTag);
+
+
+                    var elem = document.createElement("img");
+                    //elem.setAttribute("src", service_text2);
+                    elem.setAttribute("height", "300");
+                    elem.setAttribute("width", "300");
+                    elem.src = service_text2;
+                    document.getElementById("final_service_text3").appendChild(elem);
+
                     //final_text3 = service_text3;
                     //final_text4 = service_text4;
                 }
@@ -416,10 +438,7 @@ $(document).ready(function () {
                 }else{
                     process_info = {};
                 }
-                document.getElementById("final_service_text1").innerHTML = final_text1;
-                document.getElementById("final_service_text2").innerHTML = final_text2;
-                document.getElementById("final_service_text3").innerHTML = final_text3;
-                document.getElementById("final_service_text4").innerHTML = final_text4;
+
                 document.getElementById("final_process_type").innerHTML = get_process_type(process_type);
                 if (process_type == "now"){
                     document.getElementById("final_process_info").innerHTML = "-"
