@@ -54,8 +54,32 @@ class ChatConsumer(AsyncWebsocketConsumer):
         send_type = self.INTERACTION_SERVICE
         if service_type == ServiceType.QUIZ_ANSWER:
             send_type = self.QUIZ_ANSWER
+            service_id = get_service_id(category, text_data_json)
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': send_type,
+                    'service_id': service_id,
+                    'data': text_data_json,
+                }
+            )
+            if category == Category.TV or category == Category.MENUAL:
+                await self.update_db(text_data_json, service_id)
+
         elif service_type == ServiceType.SCHEDULE:
             send_type = self.SCHEDULE_DATA
+            service_id = get_service_id(category, text_data_json)
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': send_type,
+                    'service_id': service_id,
+                    'data': text_data_json,
+                }
+            )
+            if category == Category.TV or category == Category.MENUAL:
+                await self.update_db(text_data_json, service_id)
+
         elif service_type == ServiceType.UPDATE_SCHEDULE:
             result = self.update_schedule_db(text_data_json)
             await self.channel_layer.group_send(
@@ -67,18 +91,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 }
             )
             return
-
-        service_id = get_service_id(category, text_data_json)
-        if send_type == self.QUIZ_ANSWER or send_type == self.SCHEDULE_DATA:
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': send_type,
-                    'service_id': service_id,
-                    'data': text_data_json,
-                }
-            )
         else:
+            service_id = get_service_id(category, text_data_json)
             process_type = text_data_json['process_type']
             if process_type == ProcessType.NOW:
                 await self.channel_layer.group_send(
@@ -93,20 +107,21 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 # FIXME: set schedule data for REPEAT and RESERVE
                 create_service_schedule(service_id, text_data_json)
 
-        # sync to db
-        if category == Category.TV or category == Category.MENUAL:
-            await self.update_db(text_data_json, service_id)
+            # sync to db
+            if category == Category.TV or category == Category.MENUAL:
+                await self.update_db(text_data_json, service_id)
 
     async def update_db(self, text_data_json, service_id):
         service_type = text_data_json['service_type']
         owner = text_data_json['owner']
-        channel_name = text_data_json['channel_name']
+
         if service_type == ServiceType.QUIZ_ANSWER:
             service_obj = get_tv_service(owner).objects.get(service_id=service_id)
             service_obj.result = text_data_json['answer']
             if service_obj.process_type == ProcessType.REPEAT:
                 service_obj.process_state = ProcessState.WAIT_SEND
             else:
+                print("finish service: " + service_id)
                 service_obj.process_state = ProcessState.FINISH
                 if service_obj.process_type == ProcessType.RESERVE:
                     print("remove")
@@ -140,6 +155,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             service_title = text_data_json['service_title']
             process_type = text_data_json['process_type']
             process_info = text_data_json['process_info']
+            channel_name = text_data_json['channel_name']
             countdown = text_data_json['countdown']
 
             contents = self.make_db_contents_data(text_data_json)
