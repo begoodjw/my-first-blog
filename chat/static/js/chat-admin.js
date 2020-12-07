@@ -313,6 +313,7 @@ $(document).ready(function () {
 
             }else if (current_step_num == 2) {
                 service_title = document.querySelector('#title-input').value;
+                countdown = "default";
                 if (service_type == 'quiz') {
                     service_text1 = document.querySelector('#question-input').value;
                     if (detail_type == 'multi'){
