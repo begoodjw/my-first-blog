@@ -11,6 +11,13 @@ var action = document.getElementById("current-side-menu").textContent;;
   }else if (action == "quiz_answer"){
     var element = document.getElementById("side-menu-quiz-answer");
     element.classList.add("active");
+  }else if (action == "contact_us"){
+    var element = document.getElementById("side-menu-contact-us");
+    element.classList.add("active");
   }else{
     console.log("action: " + action)
   }
+
+function contactToUs(){
+    window.open('mailto:contact-us@everydaytalk.net');
+}

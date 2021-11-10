@@ -1,6 +1,7 @@
 from .models import *
 
-tv_channels = ['KBS1', 'KBS2', 'tvN', 'JTBC', 'MBC', 'SBS']
+tv_channels = ['KBS1', 'KBS2', 'tvN', 'JTBC', 'MBC', 'SBS',
+               'TV조선', 'MBN', '채널A', 'Mnet', 'XtvN', 'NQQ', 'SKY']
 
 
 class BroadCaster:
@@ -17,6 +18,20 @@ class BroadCaster:
             return MBCService
         elif channel_name == 'SBS':
             return SBSService
+        elif channel_name == 'TV조선':
+            return TVChosunService
+        elif channel_name == 'MBN':
+            return MBNService
+        elif channel_name == '채널A':
+            return ChannelAService
+        elif channel_name == 'Mnet':
+            return MnetService
+        elif channel_name == 'XtvN':
+            return TvnShowService
+        elif channel_name == 'NQQ':
+            return NQQService
+        elif channel_name == 'SKY':
+            return SkyService
         else:
             return ChannelService1
 
@@ -50,8 +65,22 @@ def get_tv_service(channel_name):
         return MBCService
     elif channel_name == 'SBS':
         return SBSService
-    elif channel_name == 'ADMIN':
-        return AllService
+    elif channel_name == 'TV조선':
+        return TVChosunService
+    elif channel_name == 'MBN':
+        return MBNService
+    elif channel_name == '채널A':
+        return ChannelAService
+    elif channel_name == 'Mnet':
+        return MnetService
+    elif channel_name == 'XtvN':
+        return TvnShowService
+    elif channel_name == 'OCN':
+        return OCNService
+    elif channel_name == 'NQQ':
+        return NQQService
+    elif channel_name == 'SKY':
+        return SkyService
     else:
         return ChannelService1
 
@@ -69,8 +98,22 @@ def get_tv_permission(channel_name):
         return 'chat.add_mbcservice'
     elif channel_name == 'SBS':
         return 'chat.add_sbsservice'
-    elif channel_name == 'SBS':
-        return 'chat.add_allservice'
+    elif channel_name == 'TV조선':
+        return 'chat.add_tvchosunservice'
+    elif channel_name == 'MBN':
+        return 'chat.add_mbnservice'
+    elif channel_name == '채널A':
+        return 'chat.add_channelaservice'
+    elif channel_name == 'Mnet':
+        return 'chat.add_mnetservice'
+    elif channel_name == 'XtvN':
+        return 'chat.add_svnshowservice'
+    elif channel_name == 'NQQ':
+        return 'chat.add_nqqservice'
+    elif channel_name == 'SKY':
+        return 'chat.add_skyservice'
+    elif channel_name == 'OCN':
+        return 'chat.add_ocnservice'
     else:
         return 'chat.add_channelservice1'
 

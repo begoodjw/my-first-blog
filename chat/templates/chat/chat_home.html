@@ -11,16 +11,16 @@
     <div class="col-xl-3 col-sm-6">
       <div class="item d-flex align-items-center">
         <div class="icon bg-violet"></i></div>
-        <div class="title"><span>전체<br>카운트</span>
+        <div class="title"><span>전체 수행</span>
         </div>
-        <div class="number"><strong>{{ services_all.count }}</strong></div>
+        <div class="number"><strong>{{ all_count }}</strong></div>
       </div>
     </div>
     <!-- Item -->
     <div class="col-xl-3 col-sm-6">
       <div class="item d-flex align-items-center">
         <div class="icon bg-red"></i></div>
-        <div class="title"><span>반복<br>카운트</span>
+        <div class="title"><span>반복 서비스</span>
         </div>
         <div class="number"><strong>{{ pending_repeat.count }}</strong></div>
       </div>
@@ -29,7 +29,7 @@
     <div class="col-xl-3 col-sm-6">
       <div class="item d-flex align-items-center">
         <div class="icon bg-green"></i></div>
-        <div class="title"><span>예약<br>카운트</span>
+        <div class="title"><span>예약 서비스</span>
         </div>
         <div class="number"><strong>{{ pending_reserve.count }}</strong></div>
       </div>
@@ -38,9 +38,9 @@
     <div class="col-xl-3 col-sm-6">
       <div class="item d-flex align-items-center">
         <div class="icon bg-orange"></i></div>
-        <div class="title"><span>정답 대기<br>카운트</span>
+        <div class="title"><span>정답 대기</span>
         </div>
-        <div class="number"><strong>{{ pending_quiz.count }}</strong></div>
+        <div class="number"><strong>{{ pending_quiz_count }}</strong></div>
       </div>
     </div>
   </div>
@@ -53,17 +53,31 @@
         <div class="col-lg-12">
           <div class="card">
             <div class="card-header d-flex align-items-center">
-              <h3 class="h4">반복 리스트</h3>
+                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-arrow-repeat" viewBox="0 0 16 16">
+                      <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"/>
+                      <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z"/>
+                    </svg>
+                <h3 class="h4">반복 리스트</h3>
             </div>
             <div class="card-body">
               <div class="table-responsive">
                 <table class="table">
+                    <colgroup>
+                        <col span="1" style="width: 10%;">
+                        <col span="1" style="width: 10%;">
+                        <col span="1" style="width: 15%;">
+                        <col span="1" style="width: 20%;">
+                        <col span="1" style="width: 15%;">
+                        <col span="1" style="width: 10%;">
+                        <col span="1" style="width: 20%;">
+                    </colgroup>
                   <thead>
                     <tr>
                         <th hidden="hidden">서비스 ID</th>
                         <th class="channel_name" hidden="hidden">채널</th>
-                        <th>서비스 타입</th>
-                        <th>퀴즈 타입</th>
+                        <th hidden="hidden">분류</th>
+                        <th>서비스</th>
+                        <th>형식</th>
                         <th>프로그램</th>
                         <th>요약</th>
                         <th>수행 시간</th>
@@ -76,6 +90,7 @@
                     <tr class="table_row">
                         <td class="service_id" hidden="hidden">{{ service.service_id }}</td>
                         <td class="channel_name" hidden="hidden">{{ service.channel_name }}</td>
+                        <td class="schedule_target" hidden="hidden">서비스</td>
                         <td>{{ service.get_service_type }}</td>
                         <td>{{ service.get_detail_type }}</td>
                         <td>{{ service.program_title }}</td>
@@ -84,9 +99,9 @@
                         <td class="schedule_info" style="width:10%">{{ service.display_schedule_info }}</td>
                         <td >
                             <div>
-                                <button class="ActivateButton" id="RepeatActivateButton">시작</button>
-                                <button class="DeactivateButton" id="RepeatDeactivateButton">정지</button>
-                                <button class="RemoveButton" id="RepeatRemoveButton">삭제</button>
+                                <button class="control-button ActivateButton btn-success" id="RepeatActivateButton">시작</button>
+                                <button class="control-button DeactivateButton btn-warning" id="RepeatDeactivateButton">정지</button>
+                                <button class="control-button RemoveButton btn-danger" id="RepeatRemoveButton">삭제</button>
                             </div>
                         </td>
                     </tr>
@@ -100,17 +115,32 @@
         <div class="col-lg-12">
           <div class="card">
             <div class="card-header d-flex align-items-center">
-              <h3 class="h4">예약 리스트</h3>
+                <svg xmlns="http://www.w3.org/2000/svg" width="27" height="27" fill="currentColor" class="bi bi-clock" viewBox="0 0 16 16">
+                  <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+                  <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+                </svg>
+                <h3 class="h4">예약 리스트</h3>
             </div>
             <div class="card-body">
               <div class="table-responsive">
                 <table class="table">
+                    <colgroup>
+                        <col span="1" style="width: 8%;">
+                        <col span="1" style="width: 8%;">
+                        <col span="1" style="width: 8%;">
+                        <col span="1" style="width: 13%;">
+                        <col span="1" style="width: 18%;">
+                        <col span="1" style="width: 15%;">
+                        <col span="1" style="width: 10%;">
+                        <col span="1" style="width: 20%;">
+                    </colgroup>
                   <thead>
                     <tr>
                         <th hidden="hidden">서비스 ID</th>
                         <th class="channel_name" hidden="hidden">채널</th>
-                        <th>서비스 타입</th>
-                        <th>퀴즈 타입</th>
+                        <th>분류</th>
+                        <th>서비스</th>
+                        <th>형식</th>
                         <th>프로그램</th>
                         <th>요약</th>
                         <th>수행 시간</th>
@@ -123,17 +153,38 @@
                     <tr class="table_row">
                         <td class="service_id" hidden="hidden">{{ service.service_id }}</td>
                         <td class="channel_name" hidden="hidden">{{ service.channel_name }}</td>
+                        <td class="schedule_target">서비스</td>
                         <td>{{ service.get_service_type }}</td>
                         <td>{{ service.get_detail_type }}</td>
                         <td>{{ service.program_title }}</td>
                         <td>{{ service.service_title }}</td>
                         <td >{{ service.display_process_info }}</td>
-                        <td >{{ service.display_schedule_info }}</td>
+                        <td class="schedule_info">{{ service.display_schedule_info }}</td>
                         <td >
                             <div>
-                                <button class="ActivateButton" id="RserveActivateButton">시작</button>
-                                <button class="DeactivateButton" id="ReserveDeactivateButton">정지</button>
-                                <button class="RemoveButton" id="ReserveRemoveButton">삭제</button>
+                                <button class="control-button ActivateButton btn-success">시작</button>
+                                <button class="control-button DeactivateButton btn-warning">정지</button>
+                                <button class="control-button RemoveButton btn-danger">삭제</button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% for service in pending_quiz_answer_reserve %}
+                    <tr class="table_row">
+                        <td class="service_id" hidden="hidden">{{ service.service_id }}</td>
+                        <td class="channel_name" hidden="hidden">{{ service.channel_name }}</td>
+                        <td class="schedule_target">퀴즈정답</td>
+                        <td>{{ service.get_service_type }}</td>
+                        <td>{{ service.get_detail_type }}</td>
+                        <td>{{ service.program_title }}</td>
+                        <td>{{ service.service_title }}</td>
+                        <td >{{ service.display_quiz_answer_process_info }}</td>
+                        <td class="schedule_info">{{ service.display_quiz_answer_schedule_info }}</td>
+                        <td >
+                            <div>
+                                <button class="control-button ActivateButton btn-success">시작</button>
+                                <button class="control-button DeactivateButton btn-warning">정지</button>
+                                <button class="control-button RemoveButton btn-danger">삭제</button>
                             </div>
                         </td>
                     </tr>
@@ -148,7 +199,12 @@
 
           <div class="card">
             <div class="card-header d-flex align-items-center">
-              <h3 class="h4">정답 대기 리스트</h3>
+                <svg xmlns="http://www.w3.org/2000/svg" width="27" height="27" fill="currentColor" class="bi bi-arrow-right-circle" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8zm15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM4.5 7.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H4.5z"/>
+                </svg>
+                <h3 class="h4" style="float:left;">정답 대기 리스트</h3>
+                <h3 class="pull-right" style="margin-left: 20px; float:right;">
+                    <a href="/chat/chatadmin/{{ room_name }}/quiz_answer">더 보기></a></h3>
             </div>
             <div class="card-body">
               <div class="table-responsive">
@@ -162,7 +218,7 @@
                         <th>요약</th>
                         <th>질문</th>
                         <th>보기</th>
-                        <th>날짜</th>
+                        <th>등록 일자</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -188,7 +244,14 @@
 
           <div class="card">
             <div class="card-header d-flex align-items-center">
-              <h3 class="h4">히스토리</h3>
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-list-ul" viewBox="0 0 16 16">
+                  <path fill-rule="evenodd" d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm-3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+                </svg>
+                <h3 class="h4" style="float:left;">
+                    히스토리
+                </h3>
+                <h3 style="margin-left: 20px; float:left;">
+                    <a href="/chat/chatadmin/{{ room_name }}/history">더 보기></a></h3>
             </div>
             <div class="card-body">
               <div class="table-responsive">
@@ -197,17 +260,17 @@
                     <tr>
                         <th hidden="hidden">서비스 ID</th>
                         <th class="channel_name" hidden="hidden">채널</th>
-                        <th>서비스 타입</th>
-                        <th>퀴즈 타입</th>
+                        <th>서비스</th>
+                        <th>형식</th>
                         <th>프로그램</th>
                         <th>요약</th>
-                        <th>처리 방식</th>
-                        <th>처리 상태</th>
+                        <th>수행 방식</th>
+                        <th>상태</th>
                         <th>등록 일자</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {% for service in services_all %}
+                    {% for service in history_list %}
                     <tr class="table_row">
                         <td class="service_id" hidden="hidden">{{ service.service_id }}</td>
                         <td class="channel_name" hidden="hidden">{{ service.channel_name }}</td>

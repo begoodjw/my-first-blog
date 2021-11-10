@@ -1,10 +1,11 @@
 from django.conf import settings
 from django.db import models
 from django.db.models.base import ModelBase
+from django.utils.safestring import mark_safe
 from django.utils import timezone
 import datetime
 import json
-from .chat_header import ServiceType, DetailType, ProcessType, ProcessState, ScheduleState, get_service_type_str, get_detail_type_str
+from .chat_header import ServiceType, DetailType, SingleQuizType, ProcessType, ProcessState, ScheduleState, get_service_type_str, get_detail_type_str
 
 
 '''
@@ -45,12 +46,12 @@ class TvService(models.Model):
     service_title = models.CharField(max_length=64)
     process_type = models.CharField(default='now', max_length=20)
     process_info = models.TextField() # for json type data
-    answer_include = models.CharField(max_length=20)
+    #answer_include = models.CharField(max_length=20)
     contents = models.TextField() # for json type data
     publish_date = models.DateTimeField(default=datetime.datetime.now())
     countdown = models.CharField(max_length=10)
     note = models.CharField(max_length=100)
-    answer = models.TextField()  # for json type data
+    #answer = models.TextField()  # for json type data
     process_state = models.IntegerField(default=ProcessState.FINISH)
     schedule_state = models.IntegerField(default=ScheduleState.INACTIVE)
     # 0 = service finished
@@ -82,11 +83,15 @@ class TvService(models.Model):
 
     def display_process_state(self):
         if self.process_state == ProcessState.FINISH:
-            return "처리 완료"
+            return "수행완료"
         elif self.process_state == ProcessState.WAIT_ANSWER:
-            return "정답 대기"
+            return "정답대기"
         elif self.process_state == ProcessState.WAIT_SEND:
-            return "처리 대기"
+            return "수행예약"
+        elif self.process_state == ProcessState.ANSWER_RESERVE:
+            return "정답예약"
+        elif self.process_state == ProcessState.WAIT_SEND_ANSWER_RESERVE:
+            return "수행정답예약"
         else:
             return "알수없음"
 
@@ -107,7 +112,20 @@ class TvService(models.Model):
         elif self.schedule_state == ScheduleState.INACTIVE:
             return "일시정지"
         else:
-            return ""
+            return "종료"
+
+    def display_quiz_answer_schedule_info(self):
+        contents_data = json.loads(self.contents)
+        if "answer_schedule_state" in contents_data:
+            schedule_state = contents_data["answer_schedule_state"]
+            if schedule_state == ScheduleState.ACTIVE:
+                return "운영중"
+            elif schedule_state == ScheduleState.INACTIVE:
+                return "일시정지"
+            else:
+                return "종료"
+        else:
+            return "종료"
 
     def get_examples(self):
         service_data = json.loads(self.contents)
@@ -116,14 +134,20 @@ class TvService(models.Model):
                 #return self.get_example_display(service_data['examples'])
                 return service_data['examples']
             else:
-                return "-"
+                return ""
         else:
-            return "-"
+            return ""
 
     def get_contents_data(self):
         contents_data = json.loads(self.contents)
-        print("get_contents_data: " + str(contents_data))
+        #print("get_contents_data: " + str(contents_data))
         return contents_data
+
+    def get_contents_data_str(self):
+        contents_data = json.loads(self.contents)
+        #print("get_contents_data_str: " + str(contents_data))
+        #return str(contents_data)
+        return mark_safe(json.dumps(contents_data))
 
     def show_contents_info(self):
         service_data = json.loads(self.contents)
@@ -142,9 +166,41 @@ class TvService(models.Model):
 
         return example_display
 
+    def display_quiz_answer_process_info(self):
+        contents_data = json.loads(self.contents)
+        if "quiz_answer_process_info" in contents_data:
+            quiz_answer_process_info = contents_data["quiz_answer_process_info"]
+            return quiz_answer_process_info["date"] + " / " + quiz_answer_process_info["time"]
+
+    def get_quiz_attribute_str(self):
+
+        attr = {}
+        contents_data = json.loads(self.contents)
+        process_info = json.loads(self.process_info)
+        print("type: " + str(self.service_type))
+        print("detail: " + str(self.detail_type))
+        if self.service_type != ServiceType.QUIZ:
+            return ""
+
+        if self.detail_type == DetailType.MULTI:
+            select_count = contents_data["select_count"]
+            attr["select_count"] = select_count
+
+        elif self.detail_type == DetailType.SINGLE:
+            single_type = contents_data["single_quiz_type"]
+            if single_type == SingleQuizType.LENGTH:
+                answer_length = contents_data["answer_length"]
+                attr["answer_length"] = answer_length
+
+        else:
+            return ""
+
+        return mark_safe(json.dumps(attr))
+
 
 class AllService(TvService):
     pass
+
 
 class KBS1Service(TvService):
     pass
@@ -167,6 +223,38 @@ class MBCService(TvService):
 
 
 class SBSService(TvService):
+    pass
+
+
+class TVChosunService(TvService):
+    pass
+
+
+class MBNService(TvService):
+    pass
+
+
+class ChannelAService(TvService):
+    pass
+
+
+class SkyService(TvService):
+    pass
+
+
+class NQQService(TvService):
+    pass
+
+
+class MnetService(TvService):
+    pass
+
+
+class OCNService(TvService):
+    pass
+
+
+class TvnShowService(TvService):
     pass
 
 

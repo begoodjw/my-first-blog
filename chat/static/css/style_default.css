@@ -35,6 +35,8 @@ span:focus {
   text-decoration: none;
 }
 
+
+
 section {
   padding: 50px 0;
 }
@@ -48,6 +50,7 @@ canvas {
 
 .container-fluid {
   padding: 0 30px;
+  width: 90%;
 }
 
 @media (max-width: 575px) {
@@ -63,6 +66,51 @@ header.page-header {
 table, .table {
   font-size: 0.9em;
   color: #666;
+}
+
+label.control-label {
+    width: 150px;
+    font-size: 120%;
+    font-weight:bold;
+    margin-top: 20px;
+}
+
+label.control-label.full-line {
+    width: 150px;
+    font-size: 120%;
+    font-weight:bold;
+    margin-top: 20px;
+    display: block;
+}
+
+label.control-label:before {
+    content: "\27A2";
+    margin-right: 10px;
+}
+
+label.control-label4 {
+    margin-right: 10px;
+}
+
+.description-text:before {
+    content: "\203B";
+    margin-right: 2px;
+    margin-left: 10px;
+}
+
+
+
+
+
+.repetition_item {
+    margin-left: 20px;
+    margin-bottom: 5px;
+}
+
+.repetition_time_item {
+    margin-top: 30px;
+    margin-left: 20px;
+    margin-bottom: 20px;
 }
 
 .card-close {
@@ -136,7 +184,7 @@ input {
 }
 
 .card {
-  margin-bottom: 30px;
+  margin-bottom: 50px;
   -webkit-box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.1), -1px 0 2px rgba(0, 0, 0, 0.05);
   box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.1), -1px 0 2px rgba(0, 0, 0, 0.05);
 }
@@ -977,6 +1025,7 @@ section.dashboard-counts .title {
   font-weight: 300;
   color: #777;
   margin: 0 20px;
+  width: 100px;
 }
 
 section.dashboard-counts .progress {
@@ -987,6 +1036,7 @@ section.dashboard-counts .progress {
 section.dashboard-counts .number {
   font-size: 1.8em;
   font-weight: 300;
+  margin: 0 10;
 }
 
 section.dashboard-counts .number strong {
@@ -996,6 +1046,7 @@ section.dashboard-counts .number strong {
 section.dashboard-counts .row {
   padding: 30px 15px;
   margin: 0;
+  border-radius: 10px;
 }
 
 section.dashboard-counts div[class*='col-'] .item {
@@ -1026,16 +1077,17 @@ section.dashboard-counts div[class*='col-']:last-of-type .item {
 * ==========================================================
 */
 .statistic {
-  padding: 20px 15px;
+  padding: 15px 15px;
   margin-bottom: 15px;
+  border-radius: 12px;
 }
 
 .statistic:last-of-type {
-  margin-bottom: 0;
+  margin-bottom: 40;
 }
 
 .statistic strong {
-  font-size: 1.5em;
+  font-size: 1.3em;
   color: #333;
   font-weight: 700;
   line-height: 1;
@@ -1540,12 +1592,14 @@ section.dashboard-counts div[class*='col-']:last-of-type .item {
 * ==========================================================
 */
 footer.main-footer {
-  position: absolute;
+  position: fixed;
+  z-index: 10;
+  /*position: absolute;*/
   bottom: 0;
   width: 100%;
   background: #2f333e;
   color: #fff;
-  padding: 20px 10px;
+  padding: 16px 10px;
 }
 
 footer.main-footer a {
@@ -1647,6 +1701,13 @@ section.charts div[class*="col-"] {
 .form-control {
   height: calc(2.25rem + 2px);
   border: 1px solid #dee2e6;
+  border-radius: 0;
+  padding: 0.375rem 0.75rem;
+}
+
+.form-control .invalid-input {
+    height: calc(2.25rem + 2px);
+  border: 1px solid red;
   border-radius: 0;
   padding: 0.375rem 0.75rem;
 }
@@ -1870,7 +1931,9 @@ input.input-material.is-invalid ~ label {
 }
 
 .modal-content {
-  border-radius: 0;
+    border-radius: 10px;
+    border-color: mediumpurple;
+    border-width: medium;
 }
 
 /*
@@ -3347,7 +3410,7 @@ a > code {
 .card {
   background-color: #fff;
   border: 0 solid #eee;
-  border-radius: 0;
+  border-radius: 10px;
 }
 
 .card > .list-group:first-child .list-group-item:first-child {
@@ -3361,7 +3424,7 @@ a > code {
 }
 
 .card-body {
-  padding: 1.25rem;
+  padding: 0 20;
 }
 
 .card-title {
@@ -3377,7 +3440,7 @@ a > code {
 }
 
 .card-header {
-  padding: 1rem 1.25rem;
+  margin: 10 18;
   background-color: #fff;
   border-bottom: 1px solid #eee;
 }
@@ -3505,3 +3568,33 @@ a > code {
   padding-bottom: 0.375rem;
   font-size: 125%;
 }
+
+table.dataTable thead .sorting:after,
+table.dataTable thead .sorting:before,
+table.dataTable thead .sorting_asc:after,
+table.dataTable thead .sorting_asc:before,
+table.dataTable thead .sorting_asc_disabled:after,
+table.dataTable thead .sorting_asc_disabled:before,
+table.dataTable thead .sorting_desc:after,
+table.dataTable thead .sorting_desc:before,
+table.dataTable thead .sorting_desc_disabled:after,
+table.dataTable thead .sorting_desc_disabled:before {
+bottom: .5em;
+}
+
+input[type=checkbox]
+{
+  /* Double-sized Checkboxes */
+  -ms-transform: scale(1.5); /* IE */
+  -moz-transform: scale(1.5); /* FF */
+  -webkit-transform: scale(1.5); /* Safari and Chrome */
+  -o-transform: scale(1.5); /* Opera */
+  transform: scale(1.5);
+  padding: 10px;
+}
+
+.card-header .h4{
+    margin-left: 16px;
+    font-size: 130%;
+}
+

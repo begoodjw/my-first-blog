@@ -17,6 +17,8 @@ $(document).ready(function () {
     };
 
     $(".ActivateButton").click(function() {
+        var schedule_target = $(this).closest("tr")
+                           .find(".schedule_target");
         var $schedule_info = $(this).closest("tr")
                            .find(".schedule_info");
         var $service_id = $(this).closest("tr")
@@ -25,7 +27,7 @@ $(document).ready(function () {
         var $remove_button = $(".RemoveButton");
 
 
-        if ($schedule_info.text()  == "일시정지"){
+        if ($schedule_info.text()  == "일시정지" || $schedule_info.text()  == "종료"){
             $schedule_info.html("변환중..");
             $schedule_info.css('color', 'gray');
             $deactivate_button.prop('disabled', true);
@@ -43,8 +45,9 @@ $(document).ready(function () {
             }
             chatSocket.send(JSON.stringify({
                 'category': category,
-                'service_type': "update_schedule",
+                'request_type': "update_schedule",
                 'owner': roomName,
+                'schedule_target': get_schedule_target(schedule_target.text()),
                 'service_id': $service_id.text(),
                 'state': ACTIVE_STATE, //active
             }));
@@ -52,6 +55,8 @@ $(document).ready(function () {
     });
 
     $(".DeactivateButton").click(function() {
+        var schedule_target = $(this).closest("tr")
+                           .find(".schedule_target");
         var $item = $(this).closest("tr")   // Finds the closest row <tr>
                            .find(".schedule_info");     // Gets a descendent with class="nr"
         var $service_id = $(this).closest("tr")
@@ -77,8 +82,9 @@ $(document).ready(function () {
             }
             chatSocket.send(JSON.stringify({
                 'category': category,
-                'service_type': "update_schedule",
+                'request_type': "update_schedule",
                 'owner': roomName,
+                'schedule_target': get_schedule_target(schedule_target.text()),
                 'service_id': $service_id.text(),
                 'state': INACTIVE_STATE, //active
             }));
@@ -86,6 +92,8 @@ $(document).ready(function () {
     });
 
     $(".RemoveButton").click(function() {
+        var schedule_target = $(this).closest("tr")
+                           .find(".schedule_target");
         var $item = $(this).closest("tr")   // Finds the closest row <tr>
                            .find(".schedule_info");     // Gets a descendent with class="nr"
         var $service_id = $(this).closest("tr")
@@ -111,8 +119,9 @@ $(document).ready(function () {
             }
             chatSocket.send(JSON.stringify({
                 'category': category,
-                'service_type': "update_schedule",
+                'request_type': "update_schedule",
                 'owner': roomName,
+                'schedule_target': get_schedule_target(schedule_target.text()),
                 'service_id': $service_id.text(),
                 'state': FINISH_STATE, //active
             }));
@@ -121,6 +130,14 @@ $(document).ready(function () {
 
 });
 
+
+function get_schedule_target(text){
+    if (text == "서비스"){
+        return "service"
+    }else if(text == "퀴즈정답"){
+        return "quiz_answer"
+    }
+}
 
 window.onload = function(){
     console.log("onload called")

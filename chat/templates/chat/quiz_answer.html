@@ -19,7 +19,7 @@
 
 #pendingQuizTable tr:nth-child(even){background-color: #f2f2f2;}
 
-.table_row:hover {background-color: #ddd;}
+.table_row:hover {background-color: #lavender;}
 
 #pendingQuizTable th {
   padding-top: 12px;
@@ -31,6 +31,11 @@
 </style>
 <div id="interactive-service-channel" hidden="hidden">{{ room_name }}</div>
 <section class="dashboard-header no-padding-bottom">
+    <div class="progress" style="display: none;">
+      <div id="dynamic" class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+        <span id="current-progress"></span>
+      </div>
+    </div>
 <div class="container-fluid">
   <div class="row">
     <!-- Statistics -->
@@ -42,28 +47,60 @@
                     <div class="panel-body">
                         <div class="form-group">
                             <div class="quiz_question">
-                                <label class="control-label">질문 : </label>
-                                <b id="question_value"></b><br>
+                                <label class="control-label full-line">퀴즈 질문</label>
+                                <label id="question_value" style="color: gray">※ 아래 리스트에서 선택</label><br>
                             </div>
-                            <div class="quiz_examples">
-                                <label class="control-label">보기 : </label>
-                                <button id="example-button1" class="btn example-button" type="button"></button>
-                                <button id="example-button2" class="btn example-button" type="button"></button>
-                                <button id="example-button3" class="btn example-button" type="button"></button>
-                                <button id="example-button4" class="btn example-button" type="button"></button>
-                                <button id="example-button5" class="btn example-button" type="button"></button>
-                                <button id="example-button6" class="btn example-button" type="button"></button>
-                                <button id="example-button7" class="btn example-button" type="button"></button>
-                                <button id="example-button8" class="btn example-button" type="button"></button>
-                                <button id="example-button9" class="btn example-button" type="button"></button>
-                                <button id="example-button10" class="btn example-button" type="button"></button>
-                                <b id="example_value"></b><br><br>
-                            </div>
-                            <label class="control-label">정답 입력</label>
-                            <input id="quiz_answer" maxlength="100" type="text" required="required" class="form-control"
-                                   placeholder="정답 입력 ( ** 위의 보기를 선택하여 입력 권장 ** )" style="margin-bottom: 10"/>
-                            <button id="service_submit" class="btn btn-primary add-example-btn" type="button">정답 제출하기</button>
                         </div>
+                        <div class="form-group" id="quiz-example-group" style="display: none">
+                            <div class="quiz_examples">
+                                <label class="control-label full-line" style="display: block;">퀴즈 보기</label>
+                                <div id="answer-example-box">
+                                    <button id="example-button1" class="btn btn-light example-button" type="button">보기1</button>
+                                    <button id="example-button2" class="btn btn-light example-button" type="button">보기2</button>
+                                    <button id="example-button3" class="btn btn-light example-button" type="button">보기3</button>
+                                    <button id="example-button4" class="btn btn-light example-button" type="button">보기4</button>
+                                    <button id="example-button5" class="btn btn-light example-button" type="button">보기5</button>
+                                    <button id="example-button6" class="btn btn-light example-button" type="button">보기6</button>
+                                    <button id="example-button7" class="btn btn-light example-button" type="button">보기7</button>
+                                    <button id="example-button8" class="btn btn-light example-button" type="button">보기8</button>
+                                    <button id="example-button9" class="btn btn-light example-button" type="button">보기9</button>
+                                    <button id="example-button10" class="btn btn-light example-button" type="button">보기10</button>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label full-line">정답 입력</label>
+                            <label class="important-comment" id="answer-attr" style="display: none"></label>
+                            <input id="quiz_answer" maxlength="100" type="text" required="required" class="form-control"
+                                   placeholder="정답 입력 ( ※ 객관식은 위의 보기를 선택하여 입력 권장 )" style="margin-bottom: 30"/>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label full-line">수행 시간</label>
+                            <div style="margin-bottom: 10"></div>
+                            <div class="radio">
+                              <label class="radio-label"><input class="radio-template" id="radio_now" type="radio" name="process_radio" value="now" style="margin-right: 16" onclick="processTimeRadioClick(this);" checked>지금</label>
+                            </div>
+                            <div class="radio">
+                              <label class="radio-label"><input class="radio-template" id="radio_reserve" type="radio" name="process_radio" value="reserve" style="margin-right: 16" onclick="processTimeRadioClick(this);">예약</label>
+                            </div>
+                            <div class="reservation_config" style="display: none;">
+                                <div>
+                                    <label for="process_date">날짜 : </label>
+                                    <input type="date" id="process_date" name="appt1">
+                                    <label class="important-comment" id="date-attr" style="display: none"></label>
+                                </div>
+                                <div>
+                                    <label for="process_time">시간 : </label>
+                                    <input type="time" id="process_time" name="appt2">
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <button id="answer-submit" class="btn btn-success add-example-btn pull-right" type="button">정답 제출하기</button>
+                        </div>
+
 
                         <!--<button class="btn btn-success pull-right" type="button" id="service_submit">제출하기</button>-->
                     </div>
@@ -80,7 +117,7 @@
 <section class="tables">
     <div class="container-fluid">
       <div class="row">
-        <div class="col-lg-10">
+        <div class="col-lg-12">
 
           <div class="card">
             <div class="card-header d-flex align-items-center">
@@ -89,16 +126,24 @@
             <div class="card-body">
               <div class="table-responsive">
                 <table class="table">
+                    <colgroup>
+                        <col span="1" style="width: 20%;">
+                        <col span="1" style="width: 20%;">
+                        <col span="1" style="width: 30%;">
+                        <col span="1" style="width: 30%;">
+                    </colgroup>
                   <thead>
                     <tr>
                         <th hidden="hidden">서비스 ID</th>
                         <th hidden="hidden">서비스 타입</th>
                         <th>퀴즈 타입</th>
                         <th>프로그램</th>
-                        <th>요약</th>
+                        <th hidden="hidden">요약</th>
                         <th>질문</th>
-                        <th>보기</th>
+                        <th hidden="hidden">보기</th>
+                        <th hidden="hidden">속성</th>
                         <th>날짜</th>
+                        <th hidden="hidden">콘텐츠</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -106,12 +151,14 @@
                     <tr class="table_row">
                         <td class="service_id" hidden="hidden">{{ service.service_id }}</td>
                         <td hidden="hidden">{{ service.get_service_type }}</td>
-                        <td>{{ service.get_detail_type }}</td>
+                        <td class="detail_type">{{ service.get_detail_type }}</td>
                         <td>{{ service.program_title }}</td>
-                        <td>{{ service.service_title }}</td>
+                        <td hidden="hidden">{{ service.service_title }}</td>
                         <td class="question">{{ service.get_question }}</td>
-                        <td class="examples">{{ service.get_examples }}</td>
+                        <td hidden="hidden" class="examples">{{ service.get_examples }}</td>
+                        <td hidden="hidden" class="quiz-attr">{{ service.get_quiz_attribute_str }}</td>
                         <td>{{ service.publish_date}}</td>
+                        <td hidden="hidden">{{ service.get_contents_data_str }}</td>
                     </tr>
                     {% endfor %}
                   </tbody>
@@ -119,6 +166,59 @@
               </div>
             </div>
           </div>
+
+            <div class="card">
+            <div class="card-header d-flex align-items-center">
+              <h3 class="h4">정답 예약 가능 리스트</h3>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table">
+                    <colgroup>
+                        <col span="1" style="width: 10%;">
+                        <col span="1" style="width: 10%;">
+                        <col span="1" style="width: 20%;">
+                        <col span="1" style="width: 30%;">
+                        <col span="1" style="width: 30%;">
+                    </colgroup>
+                  <thead>
+                    <tr>
+                        <th hidden="hidden">서비스 ID</th>
+                        <th hidden="hidden">서비스 타입</th>
+                        <th>수행 방식</th>
+                        <th>퀴즈 타입</th>
+                        <th>프로그램</th>
+                        <th hidden="hidden">요약</th>
+                        <th>질문</th>
+                        <th hidden="hidden">보기</th>
+                        <th hidden="hidden">속성</th>
+                        <th>수행 시간</th>
+                        <th hidden="hidden">콘텐츠</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for service in reserve_possibles %}
+                    <tr class="table_row reserve_possible">
+                        <td class="service_id" hidden="hidden">{{ service.service_id }}</td>
+                        <td hidden="hidden">{{ service.get_service_type }}</td>
+                        <td class="process_type">{{ service.display_process_type }}</td>
+                        <td class="detail_type">{{ service.get_detail_type }}</td>
+                        <td>{{ service.program_title }}</td>
+                        <td hidden="hidden">{{ service.service_title }}</td>
+                        <td class="question">{{ service.get_question }}</td>
+                        <td hidden="hidden" class="examples">{{ service.get_examples }}</td>
+                        <td hidden="hidden" class="quiz-attr">{{ service.get_quiz_attribute_str }}</td>
+                        <td class="process_datetime">{{ service.display_process_info }}</td>
+                        <td hidden="hidden">{{ service.get_contents_data_str }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+
         </div>
       </div>
     </div>

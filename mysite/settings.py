@@ -13,10 +13,6 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 import os
 from . import secret_config
 
-
-
-
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONTENT_DIR = os.path.join(BASE_DIR, 'content')
@@ -28,9 +24,12 @@ CONTENT_DIR = os.path.join(BASE_DIR, 'content')
 SECRET_KEY = secret_config.SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1', '.pythonanywhere.com', '10.0.2.2']
+MAIN_DOMAIN = "everydaytalk.info"
+TEST_DOMAIN = "be89-125-141-12-34.ngrok.io"
+
+ALLOWED_HOSTS = ['127.0.0.1', '.pythonanywhere.com', '10.0.2.2', TEST_DOMAIN, MAIN_DOMAIN]
 
 SITE_ID = 1
 
@@ -134,6 +133,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 
+DATETIME_FORMAT = 'd-m-Y H:i:s'
 LANGUAGE_CODE = 'ko'
 
 TIME_ZONE = 'Asia/Seoul'
@@ -166,7 +166,7 @@ LOGIN_VIA_EMAIL = True
 LOGIN_VIA_EMAIL_OR_USERNAME = False
 LOGIN_REDIRECT_URL = 'index'
 LOGIN_URL = 'accounts:log_in'
-USE_REMEMBER_ME = True
+USE_REMEMBER_ME = False
 
 RESTORE_PASSWORD_VIA_EMAIL_OR_USERNAME = False
 ENABLE_ACTIVATION_AFTER_EMAIL_CHANGE = True

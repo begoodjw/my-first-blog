@@ -32,8 +32,10 @@
     .center {
       margin: auto;
       margin-top: 90px;
-      width: 40%;
+      width: 50%;
       padding: 10px;
+      min-width: 300px;
+      max-width: 600px;
     }
     .login-btn {
         width: 100%;
@@ -57,7 +59,7 @@
             {% csrf_token %}
             {% bootstrap_form form %}
 
-            <button class="btn btn-primary login-btn">{% trans 'Log in' %}</button>
+            <button class="btn btn-primary login-btn">로그인</button>
         </form>
     </div>
 
