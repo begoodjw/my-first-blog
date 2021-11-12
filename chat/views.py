@@ -9,6 +9,7 @@ from .broadcast import get_tv_service, get_tv_permission, tv_channels
 from django.core.exceptions import PermissionDenied
 from django.views.decorators.csrf import csrf_exempt
 from .chat_header import ProcessState, ScheduleState, ProcessType
+from .models import CurrentUser
 
 
 # Create your views here.
@@ -38,6 +39,17 @@ def chat_home_admin(request):
 @login_required()
 def chat_home(request, room_name):
     if request.user.has_perm(get_tv_permission(room_name)):
+        user_count = 0
+        if CurrentUser.objects.filter(channel_name=room_name).count() > 0:
+            obj = CurrentUser.objects.get(channel_name=room_name)
+            user_count = obj.user_count
+            print("get user count : " + str(user_count))
+        else:
+            print("create user count : " + room_name)
+            obj = CurrentUser.objects.create()
+            obj.channel_name = room_name
+            obj.user_count = 0
+
         pending_quiz = get_tv_service(room_name).objects.filter(process_state=ProcessState.WAIT_ANSWER)
         pending_reserve = get_tv_service(room_name).objects.filter(process_type=ProcessType.RESERVE).exclude(schedule_state=ScheduleState.FINISH)
         pending_quiz_answer_reserve = get_tv_service(room_name).objects.filter(Q(process_state=ProcessState.WAIT_SEND_ANSWER_RESERVE) | Q(process_state=ProcessState.ANSWER_RESERVE))
@@ -69,6 +81,7 @@ def chat_home(request, room_name):
                 quiz_answer_reserve_list.append(service)
 
         return render(request, 'chat/chat_home.html', {
+            'user_count': user_count,
             'all_count': len(services_all),
             'pending_quiz_count': len(pending_quiz),
             'pending_quiz': wait_answer_list,
@@ -86,12 +99,22 @@ def chat_home(request, room_name):
 @login_required()
 #@permission_required('chat.add_tvservice', raise_exception=True)
 def chat_admin(request, room_name):
+    RECENT_SERVICE_COUNT = 30
     if request.user.has_perm(get_tv_permission(room_name)):
         services = get_tv_service(room_name).objects.all()
+        services_all_reverse = reversed(services)
+        load_list = []
+        count = 0
+        for service in services_all_reverse:
+            load_list.append(service)
+            count += 1
+            if count >= RECENT_SERVICE_COUNT:
+                break
+
         return render(request, 'chat/chat_admin.html', {
             'action': 'create',
             'room_name': room_name,
-            'services': services,
+            'services': load_list,
             'room_name_json': mark_safe(json.dumps(room_name))})
     else:
         raise PermissionDenied()

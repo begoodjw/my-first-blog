@@ -1,4 +1,6 @@
 var roomName = document.getElementById("interactive-service-channel").textContent;
+var chatSocket;
+var category;
 
 $(document).ready(function () {
 
@@ -6,11 +8,32 @@ $(document).ready(function () {
     const INACTIVE_STATE = 0;
     const FINISH_STATE = 9;
 
+    category = 'tv'
+    if (roomName == "ADMIN"){
+        category = "menual"
+    }
+
     document.getElementById("action-title").innerHTML = "Dashboard"
 
-    var chatSocket = new WebSocket(
+    chatSocket = new WebSocket(
         'wss://' + window.location.host +
-        '/ws/chat/' + roomName +'Manager' + '/');
+        '/ws/chat/' + roomName +'Manager' + '/?channel=' + roomName);
+
+    chatSocket.onmessage = function(e) {
+        var obj = JSON.parse(e.data);
+        if (obj["request_type"] == "get_user_count"){
+            var user_count = obj["user_count"];
+            if (isNaN(user_count)){
+                toast_message(TOAST_ERROR, "이용자수 업데이트 실패");
+            }else{
+
+                document.getElementById("current-user-count").innerHTML = "<strong>" + user_count.toString() +"</strong>"
+                toast_message(TOAST_MESSAGE, "이용자수 업데이트 완료");
+            }
+
+
+        }
+    };
 
     chatSocket.onclose = function(e) {
         console.error('Chat socket closed unexpectedly');
@@ -39,10 +62,7 @@ $(document).ready(function () {
                 $deactivate_button.prop('disabled', false);
                 $remove_button.prop('disabled', false);
             }, 3000);
-            category = 'tv'
-            if (roomName == "ADMIN"){
-                category = "menual"
-            }
+
             chatSocket.send(JSON.stringify({
                 'category': category,
                 'request_type': "update_schedule",
@@ -129,6 +149,14 @@ $(document).ready(function () {
     });
 
 });
+
+function refreshUserCount(){
+    chatSocket.send(JSON.stringify({
+        'category': category,
+        'request_type': "get_user_count",
+        'owner': roomName,
+    }));
+}
 
 
 function get_schedule_target(text){

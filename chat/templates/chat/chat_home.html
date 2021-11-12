@@ -8,10 +8,29 @@
 <div class="container-fluid">
   <div class="row bg-white has-shadow">
     <!-- Item -->
+    <div class="col-xl-5 col-sm-6">
+      <div class="item d-flex align-items-center">
+        <div class="icon bg-blue-blue"><i class="icon-user" style="font-size: 120%; margin-top: 6px;"></i></div>
+        <div class="title"><span><strong>현재 이용자</strong></span></div>
+        <div id="current-user-count" class="number"><strong>{{ user_count }}</strong></div>
+          <button type="button" class="refresh-button" onclick="refreshUserCount()">
+              <!--<i class="fa fa-refresh" style="font-size: 130%;"></i>-->
+              <i class="fa fa-repeat" aria-hidden="true" style="font-size: 130%;"></i>
+          </button>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<section class="dashboard-counts no-padding-bottom">
+<div class="container-fluid">
+  <div class="row bg-white has-shadow">
+    <!-- Item -->
     <div class="col-xl-3 col-sm-6">
       <div class="item d-flex align-items-center">
-        <div class="icon bg-violet"></i></div>
-        <div class="title"><span>전체 수행</span>
+        <div class="icon bg-violet"></div>
+        <div class="title"><span><strong>전체 수행</strong></span>
         </div>
         <div class="number"><strong>{{ all_count }}</strong></div>
       </div>
@@ -19,8 +38,8 @@
     <!-- Item -->
     <div class="col-xl-3 col-sm-6">
       <div class="item d-flex align-items-center">
-        <div class="icon bg-red"></i></div>
-        <div class="title"><span>반복 서비스</span>
+        <div class="icon bg-red"></div>
+        <div class="title"><span><strong>반복 서비스</strong></span>
         </div>
         <div class="number"><strong>{{ pending_repeat.count }}</strong></div>
       </div>
@@ -28,8 +47,8 @@
     <!-- Item -->
     <div class="col-xl-3 col-sm-6">
       <div class="item d-flex align-items-center">
-        <div class="icon bg-green"></i></div>
-        <div class="title"><span>예약 서비스</span>
+        <div class="icon bg-green"></div>
+        <div class="title"><span><strong>예약 서비스</strong></span>
         </div>
         <div class="number"><strong>{{ pending_reserve.count }}</strong></div>
       </div>
@@ -37,8 +56,8 @@
     <!-- Item -->
     <div class="col-xl-3 col-sm-6">
       <div class="item d-flex align-items-center">
-        <div class="icon bg-orange"></i></div>
-        <div class="title"><span>정답 대기</span>
+        <div class="icon bg-orange"></div>
+        <div class="title"><span><strong>정답 대기</strong></span>
         </div>
         <div class="number"><strong>{{ pending_quiz_count }}</strong></div>
       </div>
@@ -53,10 +72,11 @@
         <div class="col-lg-12">
           <div class="card">
             <div class="card-header d-flex align-items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-arrow-repeat" viewBox="0 0 16 16">
+                <!--<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-arrow-repeat" viewBox="0 0 16 16">
                       <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"/>
                       <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z"/>
-                    </svg>
+                    </svg>-->
+                <i class="fa fa-refresh" aria-hidden="true" style="font-size: 150%;"></i>
                 <h3 class="h4">반복 리스트</h3>
             </div>
             <div class="card-body">
@@ -115,10 +135,11 @@
         <div class="col-lg-12">
           <div class="card">
             <div class="card-header d-flex align-items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="27" height="27" fill="currentColor" class="bi bi-clock" viewBox="0 0 16 16">
+                <!--<svg xmlns="http://www.w3.org/2000/svg" width="27" height="27" fill="currentColor" class="bi bi-clock" viewBox="0 0 16 16">
                   <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
                   <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
-                </svg>
+                </svg>-->
+                <i class="fa fa-clock-o" aria-hidden="true" style="font-size: 160%;"></i>
                 <h3 class="h4">예약 리스트</h3>
             </div>
             <div class="card-body">
@@ -199,9 +220,10 @@
 
           <div class="card">
             <div class="card-header d-flex align-items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="27" height="27" fill="currentColor" class="bi bi-arrow-right-circle" viewBox="0 0 16 16">
+                <!--<svg xmlns="http://www.w3.org/2000/svg" width="27" height="27" fill="currentColor" class="bi bi-arrow-right-circle" viewBox="0 0 16 16">
                     <path fill-rule="evenodd" d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8zm15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM4.5 7.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H4.5z"/>
-                </svg>
+                </svg>-->
+                <i class="fa fa-share-square-o" aria-hidden="true" style="font-size: 150%;"></i>
                 <h3 class="h4" style="float:left;">정답 대기 리스트</h3>
                 <h3 class="pull-right" style="margin-left: 20px; float:right;">
                     <a href="/chat/chatadmin/{{ room_name }}/quiz_answer">더 보기></a></h3>
@@ -209,6 +231,13 @@
             <div class="card-body">
               <div class="table-responsive">
                 <table class="table">
+                    <colgroup>
+                        <col span="1" style="width: 10%;">
+                        <col span="1" style="width: 15%;">
+                        <col span="1" style="width: 20%;">
+                        <col span="1" style="width: 25%;">
+                        <col span="1" style="width: 20%;">
+                    </colgroup>
                   <thead>
                     <tr>
                         <th hidden="hidden">서비스 ID</th>
@@ -217,7 +246,7 @@
                         <th>프로그램</th>
                         <th>요약</th>
                         <th>질문</th>
-                        <th>보기</th>
+                        <th hidden="hidden">보기</th>
                         <th>등록 일자</th>
                     </tr>
                   </thead>
@@ -230,7 +259,7 @@
                         <td>{{ service.program_title }}</td>
                         <td>{{ service.service_title }}</td>
                         <td>{{ service.get_question }}</td>
-                        <td style="width:20%">{{ service.get_examples }}</td>
+                        <td hidden="hidden" style="width:20%">{{ service.get_examples }}</td>
                         <td>{{ service.publish_date }}</td>
                     </tr>
                     {% endfor %}
@@ -244,9 +273,10 @@
 
           <div class="card">
             <div class="card-header d-flex align-items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-list-ul" viewBox="0 0 16 16">
+                <!--<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-list-ul" viewBox="0 0 16 16">
                   <path fill-rule="evenodd" d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm-3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
-                </svg>
+                </svg>-->
+                <i class="fa fa-list-ul" aria-hidden="true" style="font-size: 150%;"></i>
                 <h3 class="h4" style="float:left;">
                     히스토리
                 </h3>

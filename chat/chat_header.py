@@ -11,6 +11,7 @@ class RequestType:
     QUIZ_ANSWER = "quiz_answer"
     SCHEDULE = "schedule"
     UPDATE_SCHEDULE = "update_schedule"
+    GET_USER_COUNT = "get_user_count"
 
 
 class ScheduleTarget:

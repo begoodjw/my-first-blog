@@ -6,6 +6,7 @@ import json
 # from .models import TvService
 from channels.db import database_sync_to_async
 from .broadcast import get_tv_service, BroadCaster
+from .models import CurrentUser
 from .urls import SERVICE_SCHEDULER
 from django.utils.crypto import get_random_string
 from .chat_header import QUIZ_ANSWER_POSTFIX, ScheduleTarget, AnswerRequestType, RequestType, ServiceType, DetailType, Category, ProcessType, ProcessState, ScheduleState
@@ -13,6 +14,8 @@ import unicodedata
 import time
 from django.conf import settings
 import datetime
+
+#from channels_presence.models import Room
 
 PRINT_DEBUG_LOG = True
 
@@ -22,6 +25,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     QUIZ_ANSWER = "send_quiz_answer"
     SCHEDULE_DATA = "send_schedule_data"
     SCHEDULE_DB_UPDATE = "send_schedule_db_update"
+    GET_USER_COUNT = "send_user_count"
 
     room_name = ""
     room_group_name = ""
@@ -47,7 +51,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 return'''
 
         self.room_name = self.scope['url_route']['kwargs']['room_name']  # ??
-        self.room_group_name = 'chat_%s' % self.room_name
+        #self.room_group_name = 'chat_%s' % self.room_name
+        self.room_group_name = self.room_name
 
         # Join room group
         # async_to_sync(self.channel_layer.group_add)(
@@ -55,6 +60,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
+
+        if self.room_group_name.find("Manager") >= 0:
+            print("It's Manager: " + self.room_group_name)
+        else:
+            set_user_add(self.room_group_name)
+
         await self.accept()
 
     async def disconnect(self, close_code):
@@ -66,6 +77,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
+
+        if self.room_group_name.find("Manager") < 0:
+            set_user_remove(self.room_group_name)
+
 
     async def receive(self, text_data):
         print("called receive func")
@@ -133,6 +148,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             # change schedule (resume, pause, destroy)
             print("request: " + RequestType.UPDATE_SCHEDULE)
             result = update_schedule_db(text_data_json)
+
             '''await self.channel_layer.group_send(
                 self.room_group_name,
                 {
@@ -141,6 +157,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'result': result
                 }
             )'''
+
+        elif request_type == RequestType.GET_USER_COUNT:
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': self.GET_USER_COUNT,
+                    'data': text_data_json,
+                }
+            )
 
     '''async def receive_old(self, text_data):
         print("called receive func")
@@ -241,6 +266,68 @@ class ChatConsumer(AsyncWebsocketConsumer):
         print_log("send_schedule_db_update", str(schedule_data))
         await self.send(text_data=json.dumps(schedule_data))
 
+    async def send_user_count(self, event):
+        user_count_data = get_user_count_data(event['data'])
+        # print("$$$$$$$$$ schedule_db_update_data: " + str(schedule_data))
+        print_log("send_user_count", str(user_count_data))
+        await self.send(text_data=json.dumps(user_count_data))
+
+
+def get_user_count_data(text_data_json):
+    data = {}
+    category = text_data_json['category']
+    if category != Category.TV:
+        return data
+
+    channel = text_data_json['owner']
+    data['user_count'] = get_user_count(channel)
+    data['request_type'] = text_data_json['request_type']
+
+    return data
+
+def get_user_count(channel):
+    if CurrentUser.objects.filter(channel_name=channel).count() > 0:
+        obj = CurrentUser.objects.get(channel_name=channel)
+        return obj.user_count
+
+    else:
+        obj = CurrentUser.objects.create()
+        obj.channel_name = channel
+        obj.user_count = 0
+        obj.save()
+        return 0
+
+def set_user_add(channel):
+    print("start set_user_add: " + channel)
+    if CurrentUser.objects.filter(channel_name=channel).count() > 0:
+        obj = CurrentUser.objects.get(channel_name=channel)
+        print("before user count : " + str(obj.user_count))
+        obj.user_count += 1
+        print("add user count : " + str(obj.user_count))
+        obj.save()
+
+    else:
+        obj = CurrentUser.objects.create()
+        obj.channel_name = channel
+        obj.user_count = 1
+        print("create user count : " + str(obj.user_count))
+        obj.save()
+
+
+def set_user_remove(channel):
+    print("start set_user_remove: " + channel)
+    if CurrentUser.objects.filter(channel_name=channel).count() > 0:
+        obj = CurrentUser.objects.get(channel_name=channel)
+        print("before user count : " + str(obj.user_count))
+        if obj.user_count >= 1:
+            obj.user_count -= 1
+
+        print("remove user count : " + str(obj.user_count))
+        obj.save()
+    else:
+        print("No object: " + channel)
+
+
 
 def update_schedule_db(text_data_json):
     # INFO: only called in case RESERVE AND REPEAT services
@@ -325,6 +412,7 @@ async def update_db_service_create(text_data_json, service_id):
     if service_obj is None:
         print("No DB Object for " + owner)
         return
+
     service_obj.service_id = service_id
     service_obj.program_title = text_data_json['program_title']
     service_obj.channel_name = text_data_json['channel_name']
@@ -629,7 +717,6 @@ def make_db_contents_data(text_data_json):
         return contents_data
     else:
         return None
-
 
 
 def get_answer_data(service_id, event):

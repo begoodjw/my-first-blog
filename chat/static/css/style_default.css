@@ -98,6 +98,16 @@ label.control-label4 {
     margin-left: 10px;
 }
 
+.refresh-button{
+    background-color: #f0f0f0;
+    margin-left: 24px;
+    border-radius: 6px;
+    border-width: thin;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+
 
 
 
@@ -245,6 +255,11 @@ input {
 
 .bg-blue {
   background: #85b4f2 !important;
+  color: #fff;
+}
+
+.bg-blue-blue {
+  background: deepskyblue !important;
   color: #fff;
 }
 
@@ -3440,7 +3455,7 @@ a > code {
 }
 
 .card-header {
-  margin: 10 18;
+  margin: 10 0;
   background-color: #fff;
   border-bottom: 1px solid #eee;
 }

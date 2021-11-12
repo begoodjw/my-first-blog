@@ -322,7 +322,12 @@ class ChannelService16(TvService):
     pass
 
 
+class CurrentUser(models.Model):
+    channel_name = models.CharField(max_length=30)
+    user_count = models.IntegerField(default=0)
 
+    def __str__(self):
+        return self.channel_name
 
 
 class TvServiceResult(models.Model):
