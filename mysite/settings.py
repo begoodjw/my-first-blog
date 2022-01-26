@@ -27,9 +27,9 @@ SECRET_KEY = secret_config.SECRET_KEY
 DEBUG = False
 
 MAIN_DOMAIN = "everydaytalk.info"
-TEST_DOMAIN = "f79c-125-141-12-34.ngrok.io"
+TEST_DOMAIN = "0c02-125-141-12-34.ngrok.io"
 
-ALLOWED_HOSTS = ['127.0.0.1', '.pythonanywhere.com', '10.0.2.2', TEST_DOMAIN, MAIN_DOMAIN]
+ALLOWED_HOSTS = ['127.0.0.1', '.pythonanywhere.com', '10.0.2.2', TEST_DOMAIN, "everydaytalk.info", "www.everydaytalk.info"]
 
 SITE_ID = 1
 
@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'chat',
     'bootstrap4',
     'accounts',
+    'authtoken',
+    'rest_framework',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

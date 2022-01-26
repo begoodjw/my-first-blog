@@ -20,6 +20,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('chat/', include('chat.urls')),
     path('', include('accounts.urls')),
-
+    path('auth/', include('authtoken.urls')),
 ]
 print("@@@@ mysite url")
+

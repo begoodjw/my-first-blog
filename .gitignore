@@ -15,3 +15,5 @@ db.sqlite3
 /mysite/secret_config.py
 /chat/migrations/
 /accounts/migrations/
+/authtoken/migrations/
+/authtoken/talkbox-b2af7-firebase-adminsdk-tfxkq-c9d07fb8da.json
