@@ -12,6 +12,9 @@ class RequestType:
     SCHEDULE = "schedule"
     UPDATE_SCHEDULE = "update_schedule"
     GET_USER_COUNT = "get_user_count"
+    SUBMIT_USER_ANSWER = "submit_user_answer"
+    USER_ANSWER_RESULT = "answer_result"
+    SEND_USER_ANSWER_RESULT = "send_user_answer_result"
 
 
 class ScheduleTarget:

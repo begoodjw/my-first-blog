@@ -20,6 +20,8 @@ var chatSocket;
 var current_step_num = 0;
 const example_max_add_count = 6;
 var example_add_count = 0;
+const reward_product_max_add_count = 4;
+var reward_product_add_count = 0;
 
 /*const TOAST_MESSAGE = 0;
 const TOAST_WARNING = 1;
@@ -101,6 +103,13 @@ for(var i = 0; i < hidden_vote_examples.length; i++){
     hidden_vote_examples[i].hide();
 }
 
+var hidden_reward_products = [$('#reward-product-container2'), $('#reward-product-container3'),
+                        $('#reward-product-container4'),$('#reward-product-container5')];
+
+for(var i = 0; i < hidden_reward_products.length; i++){
+    hidden_reward_products[i].hide();
+}
+
 const service_obj = {'quiz': $('.service_quiz'), 'info': $('.service_info'), 'vote': $('.service_vote')};
 service_obj['quiz'].hide();
 service_obj['info'].hide();
@@ -171,6 +180,12 @@ document.querySelector('#add-vote-example-button').onclick = function(e) {
         example_add_count += 1;
     }
 }
+document.querySelector('#add-product-reward-button').onclick = function(e) {
+    if (reward_product_add_count < reward_product_max_add_count){
+        hidden_reward_products[reward_product_add_count].show();
+        reward_product_add_count += 1;
+    }
+}
 
 
 $('.quiz_option').show();
@@ -237,8 +252,8 @@ $(document).ready(function () {
     init_layout();
     send_data = {};
 
-    var step1 = $('.step-1'), step2 = $('.step-2'), step3 = $('.step-3'), step4 = $('.step-4');
-    var steps = [step1, step2, step3, step4];
+    var step1 = $('.step-1'), step2 = $('.step-2'), step3 = $('.step-3'), step_reward = $('.step-reward'), step4 = $('.step-4');
+    var steps = [step1, step2, step3, step_reward, step4];
 
 
     var all_next_buttons = $('.nextBtn');
@@ -446,16 +461,8 @@ $(document).ready(function () {
                 }
 
             }else if (current_step_num == 2) {
+                // step-3 ---> step-reward
                 var is_valid_detail = true;
-                var final_text1;
-                var final_text2;
-                var final_text3;
-                var final_text4;
-                $('#preview-button').show();
-                $('#preview-button').removeAttr("hidden");
-
-                document.getElementById("final_program_title").innerHTML = program_title;
-                document.getElementById("final_service_type").innerHTML = get_service_type(service_type) + "\xa0\xa0\xa0/\xa0\xa0\xa0" + get_detail_type(detail_type);
 
                 var process_radios = document.getElementsByName('process_radio');
                 for(var i = 0; i < process_radios.length; i++){
@@ -463,20 +470,6 @@ $(document).ready(function () {
                         process_type = process_radios[i].value;
                         send_data["process_type"] = process_type;
                     }
-                }
-
-                document.getElementById("final_service_title").innerHTML = service_title;
-                if (service_type == 'quiz') {
-                    set_final_quiz_details(detail_type)
-                }else if(service_type == 'vote') {
-                    /*final_text1 = '  - 질문 : ' + service_text1;
-                    final_text2 = '  - 보기 : ' + service_text2;
-                    //final_text3 = service_text3;
-                    //final_text4 = service_text4;
-                    document.getElementById("final_service_text1").innerHTML = final_text1;
-                    document.getElementById("final_service_text2").innerHTML = final_text2;*/
-                }else{
-                    set_final_info_details();
                 }
 
                 var process_state = "";
@@ -533,11 +526,69 @@ $(document).ready(function () {
                 send_data["process_info"] = process_info;
                 send_data["note"] = ""
 
+            }
+            else if (current_step_num == 3) {
+                // step-reward ---> step-4
+                var is_valid_detail = true;
+                $('#preview-button').show();
+                $('#preview-button').removeAttr("hidden");
+
+                document.getElementById("final_program_title").innerHTML = program_title;
+                document.getElementById("final_service_type").innerHTML = get_service_type(service_type) + "\xa0\xa0\xa0/\xa0\xa0\xa0" + get_detail_type(detail_type);
+
+                document.getElementById("final_service_title").innerHTML = service_title;
+                if (service_type == 'quiz') {
+                    set_final_quiz_details(detail_type)
+                }else if(service_type == 'vote') {
+
+                }else{
+                    set_final_info_details();
+                }
+
+                var reward_info = {}
+                var levelupCheckbox = document.getElementById('levelupCheckbox');
+                if(levelupCheckbox.checked){
+                    var text = '레벨업 :\xa0\xa0\xa0\xa0\xa0제공함';
+                    reward_info['levelup'] = "1"
+                    document.getElementById("final-service-reward-levelup").innerHTML = text;
+                }else{
+                    var text = '레벨업 :\xa0\xa0\xa0\xa0\xa0제공안함';
+                    document.getElementById("final-service-reward-levelup").innerHTML = text;
+                }
+
+                var pointCheckbox = document.getElementById('pointCheckbox');
+                if(pointCheckbox.checked){
+                    var point_value = document.querySelector('#point-input').value;
+                    var text = '포인트 :\xa0\xa0\xa0\xa0\xa0' + point_value;
+                    reward_info['point'] = point_value
+                    document.getElementById("final-service-reward-point").innerHTML = text;
+                }else{
+                    var text = '포인트 :\xa0\xa0\xa0\xa0\xa0제공안함';
+                    document.getElementById("final-service-reward-point").innerHTML = text;
+                }
+
+                var productCheckbox = document.getElementById('productCheckbox');
+                if(productCheckbox.checked){
+                    var product_name_value = document.querySelector('#product-name-input1').value;
+                    var product_count_value = document.querySelector('#product-count-input1').value;
+                    reward_info['product'] = {};
+                    reward_info['product'][product_name_value] = product_count_value;
+                    var text = '경품 추첨 :\xa0\xa0\xa0\xa0\xa0' + product_name_value + ' / ' + product_count_value + '개';
+                    document.getElementById("final-service-reward-product").innerHTML = text;
+                }else{
+                    var text = '경품 추첨 :\xa0\xa0\xa0\xa0\xa0제공안함';
+                    document.getElementById("final-service-reward-product").innerHTML = text;
+                }
+
+                if (!is_valid_detail){
+                    return ;
+                }
+
+                send_data["reward_info"] = reward_info;
+
                 document.getElementById("final_process_type").innerHTML = get_process_type(process_type, process_info);
                 document.getElementById("final_service_countdown").innerHTML = countdown + "초";
                 //console.log(JSON.stringify(send_data))
-
-
             }
 
             var next_step =  steps[current_step_num+1];
@@ -601,6 +652,7 @@ document.querySelector('#service_submit').onclick = function(e) {
     document.getElementById("service_submit").disabled = true;
     hidePreview();
     set_opaque_background();
+    console.log("service_submit")
     chatSocket.send(JSON.stringify(send_data));
 
     /*chatSocket.send(JSON.stringify({
@@ -1302,6 +1354,28 @@ function exampleCheckboxClick(checkbox){
         add_answer(example_text);
     }else{
         remove_answer(example_text);
+    }
+}
+
+function rewardCheckboxClick(checkbox){
+    var value = checkbox.value;
+
+    if (checkbox.checked){
+        if (value == "point") {
+            var point_input = document.getElementById("point-input");
+            point_input.style.display = "inline";
+        }else if (value == "product"){
+            var point_input = document.getElementById("reward-product-box");
+            point_input.style.display = "block";
+        }
+    }else{
+        if (value == "point") {
+            var point_input = document.getElementById("point-input");
+            point_input.style.display = "none";
+        }else if (value == "product"){
+            var point_input = document.getElementById("reward-product-box");
+            point_input.style.display = "none";
+        }
     }
 }
 

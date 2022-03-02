@@ -24,10 +24,10 @@ CONTENT_DIR = os.path.join(BASE_DIR, 'content')
 SECRET_KEY = secret_config.SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 MAIN_DOMAIN = "everydaytalk.info"
-TEST_DOMAIN = "0c02-125-141-12-34.ngrok.io"
+TEST_DOMAIN = "45c7-125-141-12-34.ngrok.io"
 
 ALLOWED_HOSTS = ['127.0.0.1', '.pythonanywhere.com', '10.0.2.2', TEST_DOMAIN, "everydaytalk.info", "www.everydaytalk.info"]
 
@@ -161,6 +161,8 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+
 
 ENABLE_USER_ACTIVATION = True
 DISABLE_USERNAME = False

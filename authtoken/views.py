@@ -24,7 +24,6 @@ from rest_framework.response import Response
 @api_view(['GET', 'POST'])
 def custom_token(request):
 
-
     uid = str(request.data["uid"])
     #provider = str(request.data["provider"])
     user_email = str(request.data["email"])

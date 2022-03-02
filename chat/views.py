@@ -17,6 +17,7 @@ from .models import CurrentUser
 
 @login_required()
 def chat_home_admin(request):
+    print("$$$$$ chat_home_admin called")
     if request.user.has_perm("chat.add_allservice"):
         pending_quiz = AllService.objects.filter(process_state=ProcessState.WAIT_ANSWER)
         pending_reserve = AllService.objects.filter(process_type=ProcessType.RESERVE).exclude(schedule_state=ScheduleState.FINISH)
@@ -38,6 +39,7 @@ def chat_home_admin(request):
 
 @login_required()
 def chat_home(request, room_name):
+    print("$$$$$ chat_home called")
     if request.user.has_perm(get_tv_permission(room_name)):
         user_count = 0
         if CurrentUser.objects.filter(channel_name=room_name).count() > 0:
@@ -99,17 +101,20 @@ def chat_home(request, room_name):
 @login_required()
 #@permission_required('chat.add_tvservice', raise_exception=True)
 def chat_admin(request, room_name):
+    print("$$$$$ chat_admin called")
     RECENT_SERVICE_COUNT = 30
     if request.user.has_perm(get_tv_permission(room_name)):
+        load_list = []
         services = get_tv_service(room_name).objects.all()
         services_all_reverse = reversed(services)
-        load_list = []
+        
         count = 0
         for service in services_all_reverse:
             load_list.append(service)
             count += 1
             if count >= RECENT_SERVICE_COUNT:
                 break
+
 
         return render(request, 'chat/chat_admin.html', {
             'action': 'create',
@@ -123,7 +128,7 @@ def chat_admin(request, room_name):
 @login_required()
 #@permission_required('chat.add_tvservice', raise_exception=True)
 def chat_history(request, room_name):
-    print("chat_history called: " + room_name)
+    print("$$$$$ chat_history called")
     #services = TvService.objects.filter(channel_name=room_name)
     #services = TvService.objects.all()
     if request.user.has_perm(get_tv_permission(room_name)):
@@ -140,7 +145,7 @@ def chat_history(request, room_name):
 @login_required()
 #@permission_required('chat.add_tvservice', raise_exception=True)
 def quiz_answer(request, room_name):
-    print("quiz_answer called: " + room_name)
+    print("$$$$$ quiz_answer called")
     #services = TvService.objects.filter(channel_name=room_name)
     #services = TvService.objects.all()
     if request.user.has_perm(get_tv_permission(room_name)):
@@ -161,7 +166,7 @@ def quiz_answer(request, room_name):
 @login_required()
 #@permission_required('chat.add_tvservice', raise_exception=True)
 def contact_us(request, room_name):
-    print("quiz_answer called: " + room_name)
+    print("$$$$$ contact_us called")
     if request.user.has_perm(get_tv_permission(room_name)):
         return render(request, 'chat/contact_us.html', {
             'action': 'contact_us',
@@ -179,6 +184,7 @@ def room(request, room_name):
 
 @csrf_exempt
 def chat_relay(request, room_name):
+    print("$$$$$ chat_relay called")
     received_json_data = {}
     if request.method == "POST":
         received_json_data = json.loads(request.body)

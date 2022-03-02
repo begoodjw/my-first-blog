@@ -331,9 +331,9 @@ class CurrentUser(models.Model):
 
 
 class TvServiceResult(models.Model):
-    service_id = models.CharField(max_length=100)
-    channel_name = models.CharField(max_length=20)
-    participants = models.IntegerField()
+    service_id = models.CharField(max_length=100, default='')
+    channel_name = models.CharField(max_length=20, default='')
+    participants = models.IntegerField(default=0)
     result = models.TextField()
 
     def publish(self):

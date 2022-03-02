@@ -6,14 +6,18 @@ import json
 # from .models import TvService
 from channels.db import database_sync_to_async
 from .broadcast import get_tv_service, BroadCaster
-from .models import CurrentUser
+from .models import CurrentUser, TvServiceResult
 from .urls import SERVICE_SCHEDULER
 from django.utils.crypto import get_random_string
+import websocket
+import redis
 from .chat_header import QUIZ_ANSWER_POSTFIX, ScheduleTarget, AnswerRequestType, RequestType, ServiceType, DetailType, Category, ProcessType, ProcessState, ScheduleState
 import unicodedata
 import time
 from django.conf import settings
 import datetime
+import threading
+from random import randrange
 
 #from channels_presence.models import Room
 
@@ -24,8 +28,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
     INTERACTION_SERVICE = "send_interaction_service"
     QUIZ_ANSWER = "send_quiz_answer"
     SCHEDULE_DATA = "send_schedule_data"
-    SCHEDULE_DB_UPDATE = "send_schedule_db_update"
     GET_USER_COUNT = "send_user_count"
+    USER_ANSWER_COUNT = "send_user_answer_count"
 
     room_name = ""
     room_group_name = ""
@@ -51,8 +55,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 return'''
 
         self.room_name = self.scope['url_route']['kwargs']['room_name']  # ??
-        #self.room_group_name = 'chat_%s' % self.room_name
-        self.room_group_name = self.room_name
+        self.room_group_name = 'chat_%s' % self.room_name
+        #self.room_group_name = self.room_name
 
         # Join room group
         # async_to_sync(self.channel_layer.group_add)(
@@ -91,19 +95,37 @@ class ChatConsumer(AsyncWebsocketConsumer):
         request_type = text_data_json['request_type']
 
         if request_type == RequestType.SERVICE_CREATE:
+            print("SERVICE_CREATE process start")
             # process service from Interaction Manager
             # NOW, RESERVE, REPEAT
             service_id = get_service_id(category, text_data_json)
             process_type = text_data_json['process_type']
             if process_type == ProcessType.NOW:
+                send_data = get_send_data(service_id, text_data_json)
+                channel = text_data_json['channel_name']
+                create_result_data(send_data)
+                print("send data: " + str(send_data))
                 await self.channel_layer.group_send(
                     self.room_group_name,
                     {
                         'type': self.INTERACTION_SERVICE,
                         'service_id': service_id,
-                        'data': text_data_json,
+                        'data': send_data,
                     }
                 )
+                if send_data["service_type"] == ServiceType.QUIZ:
+                    countdown = int(send_data["countdown"])
+
+                    if send_data["detail_type"] == DetailType.MULTI:
+                        #user_answer_count_data = get_user_answer_count_data(service_id)
+                        #print_log("Timer send_user_answer_count", str(user_answer_count_data))
+                        timer = Timer(countdown + 5, send_answer_result_service, [service_id, channel])
+                        timer.start()
+
+                    if "answer" in send_data:
+                        timer = Timer(countdown + 8, process_finish_result_data, [service_id, channel])
+                        timer.start()
+
             else:
                 # FIXME: set schedule data for REPEAT and RESERVE
                 create_service_schedule(service_id, text_data_json)
@@ -115,6 +137,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         elif request_type == RequestType.QUIZ_ANSWER:
             # execute quiz answer
             service_id = get_service_id(category, text_data_json)
+            channel = text_data_json["channel_name"]
+            answer_data = get_answer_data(service_id, text_data_json)
+            #FIXME: Product Reward Process
+            answer_data = get_quiz_result_reward_data(service_id, answer_data)
 
             answer_request_type = text_data_json['answer_request_type']
             if answer_request_type == AnswerRequestType.SUBMIT:
@@ -123,9 +149,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     {
                         'type': self.QUIZ_ANSWER,
                         'service_id': service_id,
-                        'data': text_data_json,
+                        'data': answer_data,
                     }
                 )
+            timer = Timer(5, process_finish_result_data, [service_id, channel])
+            timer.start()
 
             if category == Category.TV or category == Category.MENUAL:
                 await update_quiz_answer(text_data_json, service_id)
@@ -133,30 +161,47 @@ class ChatConsumer(AsyncWebsocketConsumer):
         elif request_type == RequestType.SCHEDULE:
             # execute schedule ( send service by schedule )
             service_id = get_service_id(category, text_data_json)
+
+            channel = text_data_json['channel_name']
+            schedule_data = get_schedule_data(service_id, text_data_json)
+
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
                     'type': self.SCHEDULE_DATA,
                     'service_id': service_id,
-                    'data': text_data_json,
+                    'data': schedule_data,
                 }
             )
+
+            if schedule_data['service_type'] == ServiceType.INFO and text_data_json["process_type"] == ProcessType.RESERVE:
+                timer = Timer(10, delete_contents_image, [service_id, text_data_json["owner"]])
+                timer.start()
+
+            if schedule_data["service_type"] == ServiceType.QUIZ:
+                countdown = int(schedule_data["countdown"])
+                time.sleep(countdown + 6)
+                if schedule_data["detail_type"] == DetailType.MULTI:
+                    #user_answer_count_data = get_user_answer_count_data(service_id)
+                    #print_log("send_user_answer_count", str(user_answer_count_data))
+                    timer = Timer(countdown + 5, send_answer_result_service, [service_id, channel])
+                    timer.start()
+
+                if "answer" in schedule_data:
+                    timer = Timer(countdown + 8, process_finish_result_data, [service_id, channel])
+                    timer.start()
+
+            elif schedule_data["service_type"] == RequestType.QUIZ_ANSWER:
+                timer = Timer(5, process_finish_result_data, [service_id, channel])
+                timer.start()
+
             if category == Category.TV or category == Category.MENUAL:
                 await update_schedule_data(text_data_json, service_id)
 
         elif request_type == RequestType.UPDATE_SCHEDULE:
             # change schedule (resume, pause, destroy)
             print("request: " + RequestType.UPDATE_SCHEDULE)
-            result = update_schedule_db(text_data_json)
-
-            '''await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': self.SCHEDULE_DB_UPDATE,
-                    'data': text_data_json,
-                    'result': result
-                }
-            )'''
+            update_schedule_db(text_data_json)
 
         elif request_type == RequestType.GET_USER_COUNT:
             await self.channel_layer.group_send(
@@ -166,104 +211,76 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'data': text_data_json,
                 }
             )
+        elif request_type == RequestType.SUBMIT_USER_ANSWER:
+            print("SUBMIT_USER_ANSWER process start")
+            user_id = text_data_json["uid"]
+            service_id = text_data_json["service_id"]
+            #service_type = text_data_json["service_type"]
+            #detail_type = text_data_json["detail_type"]
+            user_answer = text_data_json["user_answer"]
 
-    '''async def receive_old(self, text_data):
-        print("called receive func")
-        text_data_json = json.loads(text_data)
+            print(user_id + " / " + service_id + " / " + user_answer)
 
-        category = text_data_json['category']
-        service_type = text_data_json['service_type']
+            r = redis.Redis()
+            if not r.exists(service_id):
+                return
 
-        if service_type == ServiceType.QUIZ_ANSWER:
-            # execute quiz answer
-            service_id = get_service_id(category, text_data_json)
+            #p = r.pipeline()
+            #p.watch(service_id)
+            #p.multi()
+            #result_data = json.loads(p.get(service_id))
+
+            result_bytes = r.get(service_id)
+            print(str(result_bytes))
+            result_data = json.loads(result_bytes.decode('utf-8'))
+
+            service_type = result_data["service_type"]
+            detail_type = result_data["detail_type"]
+            if service_type == ServiceType.QUIZ:
+                if detail_type == DetailType.MULTI:
+                    user_answers = user_answer.split("|")
+                    for answer in user_answers:
+                        result_data["user_answer_count"][answer] += 1
+                        result_data["user_answer_list"][answer].append(user_id)
+                else:
+                    if user_answer not in result_data["user_answer_list"]:
+                        result_data["user_answer_list"][user_answer] = []
+                    result_data["user_answer_list"][user_answer].append(user_id)
+
+                result_data["participants"] += 1
+                r.set(service_id, json.dumps(result_data))
+
+            #p.execute()
+
+        elif request_type == RequestType.SEND_USER_ANSWER_RESULT:
+            print("SEND_USER_ANSWER_RESULT process start")
+            service_id = text_data_json["service_id"]
+            user_answer_count_data = get_user_answer_count_data(service_id)
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
-                    'type': self.QUIZ_ANSWER,
-                    'service_id': service_id,
-                    'data': text_data_json,
+                    'type': self.USER_ANSWER_COUNT,
+                    'data': user_answer_count_data,
                 }
             )
-            if category == Category.TV or category == Category.MENUAL:
-                await self.update_db(text_data_json, service_id)
-
-        elif service_type == ServiceType.SCHEDULE:
-            # execute schedule ( send service by schedule )
-            service_id = get_service_id(category, text_data_json)
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': self.SCHEDULE_DATA,
-                    'service_id': service_id,
-                    'data': text_data_json,
-                }
-            )
-            if category == Category.TV or category == Category.MENUAL:
-                await self.update_db(text_data_json, service_id)
-
-        elif service_type == ServiceType.UPDATE_SCHEDULE:
-            # change schedule (resume, pause, destroy)
-            result = self.update_schedule_db(text_data_json)
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': self.SCHEDULE_DB_UPDATE,
-                    'data': text_data_json,
-                    'result': result
-                }
-            )
-            return
-        else:
-            # process service from Interaction Manager
-            # NOW, RESERVE, REPEAT
-            service_id = get_service_id(category, text_data_json)
-            process_type = text_data_json['process_type']
-            if process_type == ProcessType.NOW:
-                await self.channel_layer.group_send(
-                    self.room_group_name,
-                    {
-                        'type': self.INTERACTION_SERVICE,
-                        'service_id': service_id,
-                        'data': text_data_json,
-                    }
-                )
-            else:
-                # FIXME: set schedule data for REPEAT and RESERVE
-
-                create_service_schedule(service_id, text_data_json)
-
-            # sync to db
-            if category == Category.TV or category == Category.MENUAL:
-                await self.update_db(text_data_json, service_id)'''
-
 
     # Receive message from room group
     async def send_interaction_service(self, event):
-        send_data = get_send_data(event['service_id'], event['data'])
-        # print("send_data: " + str(send_data))
-        print_log("send_interaction_service", event['service_id'])
+        service_id = event["service_id"]
+        send_data = event['data']
+        print_log("send_interaction_service", service_id)
         await self.send(text_data=json.dumps(send_data))
 
     async def send_quiz_answer(self, event):
-        answer_data = get_answer_data(event['service_id'], event['data'])
-        print_log("send_quiz_answer", event['service_id'])
+        service_id = event["service_id"]
+        answer_data = event['data']
+        print_log("send_quiz_answer", service_id)
         await self.send(text_data=json.dumps(answer_data))
 
     async def send_schedule_data(self, event):
-        schedule_data = get_schedule_data(event['service_id'], event['data'])
-        print_log("send_schedule_data", event['service_id'])
-        await self.send(text_data=json.dumps(schedule_data))
-        if schedule_data['service_type'] == ServiceType.INFO and event['data']["process_type"] == ProcessType.RESERVE:
-            timer = Timer(5, delete_contents_image, [event['service_id'], event['data']["owner"]])
-            timer.start()
-        #delete_contents_image(event['service_id'], event['data']["owner"])
-
-    async def send_schedule_db_update(self, event):
-        #print("service " + event['type'])
-        schedule_data = get_schedule_db_update(event['result'], event['data'])
-        # print("$$$$$$$$$ schedule_db_update_data: " + str(schedule_data))
-        print_log("send_schedule_db_update", str(schedule_data))
+        service_id = event["service_id"]
+        schedule_data = event['data']
+        print_log("send_schedule_data", service_id)
         await self.send(text_data=json.dumps(schedule_data))
 
     async def send_user_count(self, event):
@@ -271,6 +288,148 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # print("$$$$$$$$$ schedule_db_update_data: " + str(schedule_data))
         print_log("send_user_count", str(user_count_data))
         await self.send(text_data=json.dumps(user_count_data))
+
+    async def send_user_answer_count(self, event):
+        #service_id = event['data']["service_id"]
+        user_answer_count_data = event['data']
+        print_log("send_user_answer_count", str(user_answer_count_data))
+        await self.send(text_data=json.dumps(user_answer_count_data))
+
+
+def process_finish_result_data(service_id, channel):
+    store_service_result_data(service_id, channel)
+    delete_result_data(service_id)
+
+
+def get_user_answer_count_data(service_id):
+    data = {}
+    r = redis.Redis()
+    if not r.exists(service_id):
+        return data
+
+
+    result_bytes = r.get(service_id)
+    result_data = json.loads(result_bytes.decode('utf-8'))
+    service_type = result_data["service_type"]
+    detail_type = result_data["detail_type"]
+
+    if service_type == ServiceType.QUIZ:
+        if detail_type == DetailType.MULTI:
+            data["service_id"] = service_id
+            data["service_type"] = RequestType.USER_ANSWER_RESULT
+            data["user_answer_count"] = result_data["user_answer_count"]
+
+    return data
+
+
+def create_result_data(data):
+    result_data = {}
+    service_type = data["service_type"]
+    if service_type == ServiceType.QUIZ:
+        service_id = data["service_id"]
+        detail_type = data["detail_type"]
+        result_data["participants"] = 0
+        result_data["select_count"] = data['select_count']
+        result_data["service_type"] = service_type
+        result_data["detail_type"] = detail_type
+        result_data["user_answer_list"] = {}
+        if detail_type == DetailType.MULTI:
+            result_data["user_answer_count"] = {}
+            examples = data["examples"]
+            for example in examples.split("|"):
+                result_data["user_answer_count"][example] = 0
+                result_data["user_answer_list"][example] = []
+
+        if "reward_info" in data:
+            result_data["reward_info"] = data["reward_info"]
+
+
+
+        r = redis.Redis()
+        r.set(service_id, json.dumps(result_data))
+
+
+def delete_result_data(service_id):
+    r = redis.Redis()
+    r.delete(service_id)
+
+
+def get_quiz_result_reward_data(service_id, answer_data):
+    print("start get_quiz_result_reward_data: " + service_id)
+
+    r = redis.Redis()
+    if not r.exists(service_id):
+        return
+
+    result_bytes = r.get(service_id)
+    result_data = json.loads(result_bytes.decode('utf-8'))
+
+    correct_user_list = []
+
+    quiz_answers = answer_data['answer']
+
+    quiz_answer_list = quiz_answers.split("|")
+    count = 0
+    for quiz_answer in quiz_answer_list:
+        if count == 0:
+            correct_user_list = result_data["user_answer_list"][quiz_answer]
+            count += 1
+            continue
+
+        temp_user_list = []
+        user_list = result_data["user_answer_list"][quiz_answer]
+        for user in user_list:
+            if user in correct_user_list:
+                temp_user_list.append(user)
+
+        correct_user_list = temp_user_list
+        count += 1
+
+    if "reward_info" in result_data:
+        reward_info = result_data["reward_info"]
+        if "levelup" in reward_info:
+            answer_data["level"] = int(reward_info["levelup"])
+
+        if "point" in reward_info:
+            answer_data["point"] = int(reward_info["point"])
+
+        if "product" in reward_info:
+            answer_data["product"] = get_product_reward_info(correct_user_list, reward_info["product"])
+
+    return answer_data
+
+
+def get_product_reward_info(user_list, product_info):
+    product_reward_info = {}
+    user_pick_list = []
+    #user_count = len(user_list)
+
+    for product_name in product_info:
+        product_reward_info[product_name] = []
+        product_count = int(product_info[product_name])
+        while True:
+            pick_number = randrange(len(user_list))
+            if user_list[pick_number] not in user_pick_list:
+                user_pick_list.append(user_list[pick_number])
+                product_reward_info[product_name].append(user_list[pick_number])
+                del user_list[pick_number]
+
+                product_count -= 1
+
+            if product_count == 0:
+                break
+
+            if len(user_list) == 0:
+                return product_reward_info
+
+        if len(user_list) == 0:
+            return product_reward_info
+
+    return product_reward_info
+
+
+
+
 
 
 def get_user_count_data(text_data_json):
@@ -284,6 +443,7 @@ def get_user_count_data(text_data_json):
     data['request_type'] = text_data_json['request_type']
 
     return data
+
 
 def get_user_count(channel):
     if CurrentUser.objects.filter(channel_name=channel).count() > 0:
@@ -326,6 +486,31 @@ def set_user_remove(channel):
         obj.save()
     else:
         print("No object: " + channel)
+
+
+
+
+
+
+def store_service_result_data(service_id, channel):
+    print("start set_service_result_add: " + service_id)
+
+    r = redis.Redis()
+    if not r.exists(service_id):
+        return
+
+    result_bytes = r.get(service_id)
+    result_data = json.loads(result_bytes.decode('utf-8'))
+    #result_data = json.loads(r.get(service_id))
+
+    obj = TvServiceResult.objects.create()
+    obj.service_id = service_id
+    obj.channel_name = channel
+    obj.participants = result_data["participants"]
+    obj.result = json.dumps(result_data)
+
+    print("create user count : " + str(obj.participants))
+    obj.save()
 
 
 
@@ -719,40 +904,45 @@ def make_db_contents_data(text_data_json):
         return None
 
 
-def get_answer_data(service_id, event):
+def get_answer_data(service_id, data):
     send_data = {
         'service_id': service_id,
-        'service_type': event['request_type'],
-        'answer': event['answer']
+        'service_type': data['request_type'],
+        'answer': data['answer']
     }
     return send_data
 
 
-def get_send_data(service_id, event):
-    service_type = event['service_type']
-    detail_type = event['detail_type']
+def get_send_data(service_id, data):
+    service_type = data['service_type']
+    detail_type = data['detail_type']
 
     if service_type == ServiceType.QUIZ:
-        answer_include = event['answer_include']
+        answer_include = data['answer_include']
 
         send_data = {
             'service_id': service_id,
             'service_type': service_type,
             'detail_type': detail_type,
-            'question': event['question'],
-            'countdown': event['countdown'],
+            'question': data['question'],
+            'countdown': data['countdown'],
         }
 
         if detail_type == DetailType.MULTI:
-            send_data['examples'] = event['examples']
-            send_data['select_count'] = event['select_count']
+            send_data['examples'] = data['examples']
+            send_data['select_count'] = data['select_count']
         else:
-            single_type = event['single_quiz_type']
+            single_type = data['single_quiz_type']
             if single_type == "string-length":
-                send_data['answer_length'] = event['answer_length']
+                send_data['answer_length'] = data['answer_length']
 
         if answer_include == 'include':
-            send_data['answer'] = event['answer']
+            send_data['answer'] = data['answer']
+
+        if "reward_info" in data:
+            reward_info = data["reward_info"]
+            if len(reward_info) > 0:
+                send_data["reward_info"] = reward_info
 
         return send_data
 
@@ -761,11 +951,11 @@ def get_send_data(service_id, event):
         send_data = {
             'service_type': service_type,
             'service_id': service_id,
-            'service_title': event['service_title'],
-            'description': event['describe'],
-            'link': event['info-link'],
-            'image': event['info-image'],
-            'countdown': event['countdown'],
+            'service_title': data['service_title'],
+            'description': data['describe'],
+            'link': data['info-link'],
+            'image': data['info-image'],
+            'countdown': data['countdown'],
 
         }
         return send_data
@@ -774,12 +964,12 @@ def get_send_data(service_id, event):
         send_data = {
             'service_id': service_id,
             'service_type': service_type,
-            'question': event['question'],
-            'countdown': event['countdown'],
+            'question': data['question'],
+            'countdown': data['countdown'],
         }
 
         if detail_type == 'multi':
-            send_data["examples"] = event['examples']
+            send_data["examples"] = data['examples']
 
         return send_data
 
@@ -831,12 +1021,12 @@ def get_schedule_state(process_type):
         return ScheduleState.ACTIVE
 
 
-def get_schedule_data(service_id, event):
-    owner = event["owner"]
+def get_schedule_data(service_id, data):
+    owner = data["owner"]
     service_obj = get_tv_service(owner).objects.get(service_id=service_id)
     service_type = service_obj.service_type
     detail_type = service_obj.detail_type
-    schedule_target = event["schedule_target"]
+    schedule_target = data["schedule_target"]
     if schedule_target == ScheduleTarget.SERVICE:
         send_data = {
             'service_id': service_id,
@@ -862,6 +1052,11 @@ def get_schedule_data(service_id, event):
             if answer_include == 'include':
                 # answer = service_obj.answer
                 send_data["answer"] = contents_data["answer"]
+
+            if "reward_info" in contents_data:
+                reward_info = contents_data["reward_info"]
+                if len(reward_info) > 0:
+                    send_data["reward_info"] = reward_info
 
             return send_data
 
@@ -896,15 +1091,6 @@ def get_schedule_data(service_id, event):
             'answer': contents_data["answer"]
         }
         return send_data
-
-
-def get_schedule_db_update(result, data):
-    send_data = {
-        'service_id': data["service_id"],
-        'service_type': data[""],
-        'result': result
-    }
-    return send_data
 
 
 def quiz_answer_reserve():
@@ -989,6 +1175,28 @@ def delete_contents_image(service_id, owner):
         del contents_data["image"]
     service_obj.contents = json.dumps(contents_data)
 
+
+def get_server_domain():
+    if settings.DEBUG:
+        return settings.TEST_DOMAIN
+    else:
+        return settings.MAIN_DOMAIN
+
+
+def send_answer_result_service(service_id, room_name):
+    print('@@ send_answer_result_service, id: ' + service_id)
+    domain = get_server_domain()
+    ws = websocket.create_connection("wss://" + domain + "/ws/chat/" + room_name + "/",
+                                     header={"everydaytalk": "scheduler"})  # FIXME
+
+    send_data = json.dumps({
+        'category': Category.TV,
+        'channel_name': room_name,
+        'request_type': RequestType.SEND_USER_ANSWER_RESULT,
+        'service_id': service_id
+    })
+    ws.send(send_data)
+    ws.close()
 
 def print_log(tag, string):
     if PRINT_DEBUG_LOG:
