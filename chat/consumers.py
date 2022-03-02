@@ -394,6 +394,7 @@ def get_quiz_result_reward_data(service_id, answer_data):
             answer_data["point"] = int(reward_info["point"])
 
         if "product" in reward_info:
+            print("correct user count: " + str(len(correct_user_list)))
             answer_data["product"] = get_product_reward_info(correct_user_list, reward_info["product"])
 
     return answer_data
@@ -403,6 +404,9 @@ def get_product_reward_info(user_list, product_info):
     product_reward_info = {}
     user_pick_list = []
     #user_count = len(user_list)
+
+    if len(user_list) == 0:
+        return product_reward_info
 
     for product_name in product_info:
         product_reward_info[product_name] = []
